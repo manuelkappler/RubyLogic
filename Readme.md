@@ -23,8 +23,9 @@ Listed in decreasing order of importance
         - [x] Substitution of equivalents
         - [x] Disjoining of premises
         - [x] Monotonicity
-        - []  Disjunction premise law (**Branching**)
-        - []  Conjunction conclusion law (**Branching**)
-- [] Implement checking for premises including conclusion
-
-- Merge `markdowntruthtable` into the project and create an overarching menu
+        - [ ]  Disjunction premise law (**Branching**)
+        - [ ]  Conjunction conclusion law (**Branching**)
+- [ ] Implement checking for premises including conclusion
+- [ ] Allow for printing of proofs as TeX file
+- [ ] Implement simplification via equivalence laws
+- [ ] Merge `markdowntruthtable` into the project and create an overarching menu

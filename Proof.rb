@@ -14,7 +14,7 @@ class Proof
     @current_state = start_implication
   end
 
-  def prove
+  def prove_with_user_input
     while true
       puts (self.to_s).yellow
       puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan

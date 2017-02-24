@@ -36,7 +36,7 @@ end
 def create_proof implication
   system "clear" or system "cls"
   proof = Proof.new implication
-  proof.prove
+  proof.prove_with_user_input
 end
 
 implication = get_initial_implication

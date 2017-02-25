@@ -79,22 +79,27 @@ class Implication
   end
 
   def conditional_conclusion?
-    return true unless @conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? If}.length == 0
+    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? If}
     return false
   end
 
   def disjunction_conclusion?
-    return true unless @conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? Or}.length == 0
+    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? Or}
     return false
   end
 
   def conjunction_premise?
-    return true unless @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
+    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
+    return fals
+  end
+
+  def conjunction_concluion?
+    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
     return fals
   end
 
   def disjoining?
-    return true unless @premises.select{|x| not x.is_a? Variable and x.connective.is_a? If}.length == 0
+    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If}
     return false
   end
 

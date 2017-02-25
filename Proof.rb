@@ -59,7 +59,7 @@ class ProofTree
   def get_law_from_string string
     case string
     when "Conditional Conclusion", "IfCC"
-      law = ConditionalConclusion.neww
+      law = ConditionalConclusion.new
     when "Conjunction Premise", "CP"
       law = ConjunctionPremise.new
     when "Disjunction Conclusion", "DC"
@@ -70,6 +70,10 @@ class ProofTree
       law = DisjunctionPremise.new
     when "Conjunction Conclusion", "AndCC"
       law = ConjunctionConclusion.new
+    when "Monotonicity", "MO"
+      law = Monotonicity.new
+    when "Disjoining", "DJ"
+      law = Disjoining.new
     else
       return false
     end

@@ -2,277 +2,286 @@ require './Implication'
 require './Logic'
 require './LogicParser'
 require 'colorize'
+require './ImplicationLaws'
 
 LAWS = ['Conditional Conclusion', 'CC', 'Disjoining', 'DJ', 'Monotonicity', 'MO', 'Disjunction Conclusion', 'DC', 'Conjunction Premise', 'CP', 'Substitute Equivalents', 'SE']
 
+=begin
+  ProofTree
+  Node
+  | - State
+  | - Children
+
+  node1:  implication = law.apply initial_state
+          law = law
+          children = node2
+          done = fales
+  node2:  implication = law.apply parent.state
+          law = law
+          children = node3, node4
+          done = false
+  node3:  implication = law.apply parent.state
+          law = law
+          children = node5, node6
+          done = false
+  node4:  implication = law.apply parent.state
+          law = law
+          children = nil
+          done = true
+=end
+
+class ProofTree
+
+  def initialize given_implication
+    law = Given.new
+    @root = execute_law(law, given_implication)
+  end
+
+  def prove
+    queue = [@root]
+    until queue.empty?
+      current = queue.shift
+      unless queue.empty? and current.done?
+        work_through current
+        current.children.each{|x| queue << x unless x.done?}
+      end
+    end
+    self.print
+  end
+
+
+  def work_through node
+    next_step = false
+    until next_step
+      next_step = ask_for_next_step node
+      law = get_law_from_string next_step
+    end
+    (execute_law law, node).each{|x| node.add_child x}
+  end
+
+  def ask_for_next_step child
+    puts "Working on #{child.to_s}".cyan
+    puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan
+    input = gets.chomp
+    if ["quit", "q"].include? input.downcase
+      exit
+    elsif ["h", "help"].include? input.downcase
+      print (LAWS.select{|x| x.length > 2}.join("; ") + "\n").magenta
+      return false
+    elsif ["p", "print"].include? input.downcase
+      self.print
+      return false
+    elsif ["d", "done"].include? input.downcase
+      puts "Marking as done is not yet implemented"
+      return false
+    else
+      return input
+    end
+  end
+
+  def get_law_from_string string
+    case string
+    when "Conditional Conclusion", "IfCC"
+      law = ConditionalConclusion.neww
+    when "Conjunction Premise", "CP"
+      law = ConjunctionPremise.new
+    when "Disjunction Conclusion", "DC"
+      law = DisjunctionConclusion.new
+    when "Substitution of Equivalents", "SE"
+      law = SubstituteEquivalents.new
+    when "Disjunction Premise", "DP"
+      law = DisjunctionPremise.new
+    when "Conjunction Conclusion", "AndCC"
+      law = ConjunctionConclusion.new
+    else
+      return false
+    end
+    return law
+  end
+
+  def execute_law law, node
+    if law.is_a? Given
+      return Node.new(node, law, nil, "1")
+    elsif law.is_a? BranchingLaw
+      new_imp1 = Implication.new node.implication.get_premises, node.implication.get_conclusion
+      new_imp2 = Implication.new node.implication.get_premises, node.implication.get_conclusion
+      imps = law.apply new_imp1, new_imp2
+      new_nodes = imps.map.with_index{|x, idx| Node.new(x, law, node, node.step + ".#{idx + 1}")}
+    else
+      new_imp = Implication.new node.implication.get_premises, node.implication.get_conclusion
+      new_imp = law.apply new_imp
+      step = "#{node.step.slice(0, node.step.length - 1)}#{node.step[-1].to_i + 1}"
+      new_nodes = [Node.new(new_imp, law, node, step)]
+    end
+    return new_nodes
+  end
+
+  def print 
+    queue = [@root]
+    until queue.empty?
+      current = queue.shift
+      puts current.to_s
+      current.children.each{|x| queue << x}
+    end
+  end
+
+end
+
+class Node
+
+  attr_reader :implication, :step, :children
+
+  def initialize implication, law, parent, step
+    @implication = implication
+    @law = law
+    @parent = parent
+    @children = []
+    @step = step
+    @done = @implication.trivial?
+  end
+
+  def get_previous_implication
+    return @parent.implication
+  end
+
+  def add_child node
+    @children << node
+  end
+  
+  def has_children?
+    return (not @children.nil?)
+  end
+
+  def get_children
+    return @children
+  end
+
+  def done?
+    return @done
+  end
+
+  def to_s 
+    return "#{@step} \t #{@implication} \t \t \t #{@law} \t #{"✔" if @done} \n"
+  end
+
+end
+
+
+=begin
 class Proof
-  attr_reader :current_state
 
   def initialize start_implication
-    init = Step.new start_implication, Given.new
-    @steps = [init]
-    @current_state = start_implication
+    initial_state = State.new start_implication, Given.new
+    initial_step = Step.new [initial_state]
+    @steps = [initial_step]
+  end
+
+  def get_last_step
+    return @steps[-1]
   end
 
   def prove_with_user_input
     while true
-      puts (self.to_s).yellow
-      puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan
-      input = gets.chomp
-      if LAWS.include? input
-        begin
-          self.add_step input
-        rescue LogicError
-          puts "Can't apply this here".red
-        rescue Exception => e
-          puts (e.message).light_yellow.on_red
+      last_step = get_last_step
+      last_step.states.each do |state|
+        new_step = Step.new
+        i = handle_user_input state, gets.chomp
+        if i
+          begin
+            new_step.add_state = apply_law state, i
+          rescue LogicError => e
+            puts "#{(e.message)}. Can't apply this here.".light_yellow.on_red
+          rescue Exception => e
+            puts (e.message).light_yellow.on_red
+            puts e.backtrace.inspect
+          end
         end
-      elsif ["quit", "q"].include? input.downcase
-        break
-      elsif ["h", "help"].include? input.downcase
-        print (LAWS.select{|x| x.length > 2}.join("; ") + "\n").purple
-      elsif ["p", "print"].include? input.downcase
-        puts "Printing is not yet implemented. Sorry"
-      elsif ["d", "done"].include? input.downcase
-        puts "Marking as done is not yet implemented"
-        break
       end
-      if self.done?
-        puts "Done!".green
-        break
-      end
+#      if self.done?
+#        puts "Done!".green
+#        break
+#      end
     end
   end
 
-  def add_step string
-    new_state = Implication.new @current_state.get_premises, @current_state.get_conclusion
+  def apply_law prev_state, string
+    new_state = Implication.new prev_state.implication.get_premises, prev_state.implication.get_conclusion
     case string
-    when "Conditional Conclusion", "CC"
-      new_step =  (Step.new new_state, ConditionalConclusion.new)
+    when "Conditional Conclusion", "IfCC"
+      law = ConditionalConclusion.neww
     when "Conjunction Premise", "CP"
-      new_step = (Step.new new_state, ConjunctionPremise.new)
+      law = ConjunctionPremise.new
     when "Disjunction Conclusion", "DC"
-      new_step = (Step.new new_state, DisjunctionConclusion.new)
+      law = DisjunctionConclusion.new
     when "Substitution of Equivalents", "SE"
-      new_step = (Step.new new_state, SubstituteEquivalents.new)
+      law = SubstituteEquivalents.new
+    when "Disjunction Premise", "DP"
+      law = DisjunctionPremise.new
+    when "Conjunction Conclusion", "AndCC"
+      # Implement branching here
     else
       return false
     end
-    @steps << new_step
-    @current_state = new_step.state
+    new_state = (State.new law.apply new_state, law)
+    return new_step
   end
 
   def to_s
     string = ""
     @steps.each_with_index do |step, index|
-      string += "#{index} \t #{step.state.to_s}" + "\t" * ([(32 - step.state.to_s.length), 4].max / 4) + "#{step.law.to_s}\n"
+      string += "#{index} \t #{step.to_s}" + "\t" * ([(32 - step.to_s.length), 4].max / 4) + "#{step.to_s}\n"
     end
     return string
   end
 
   def done?
-    return true if @current_state.inconsistent_premises? or @current_state.premises_include_conclusion? 
+    puts @current_step.inspect
+    return true if @current_step.state.all?{|implication| implication.trivial?}
     return false
+  end
+
+  def handle_user_input input
+    puts (self.to_s).yellow
+    puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan
+    if ["quit", "q"].include? input.downcase
+      return false
+    elsif ["h", "help"].include? input.downcase
+      print (LAWS.select{|x| x.length > 2}.join("; ") + "\n").magenta
+    elsif ["p", "print"].include? input.downcase
+      puts "Printing is not yet implemented. Sorry"
+      return false
+    elsif ["d", "done"].include? input.downcase
+      puts "Marking as done is not yet implemented"
+      return false
+    else
+      return input
+    end
+  end
+end
+
+class State
+  attr_accessor :implication, :law
+
+  def initialize implication, law
+    @law = law
+    @implication = implication
+  end
+
+  def to_s
+    return @implication.to_s
   end
 
 end
 
 class Step
-  attr_accessor :state, :law
 
-  def initialize state, law
-    @law = law
-    @state = law.apply state
+  def initialize
+    @states = []
   end
 
-  def to_s
-    return @state.to_s
+  def add_state state
+    @states << state
   end
+
 end
-
-class Law
-end
-
-class Given < Law
-  def apply state
-    return state
-  end
-  def to_s
-    return "Given"
-  end
-end
-
-
-class ConditionalConclusion < Law
-
-  def apply state
-    raise LogicError unless state.conditional_conclusion?
-    return conditional_conclusion state
-  end
-
-  def conditional_conclusion state
-    state.conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? If}.each do |cond|
-      puts "Pushing antecedent to premises: #{cond.atom1}?"
-      next unless is_affirmative? gets.chomp
-      state.add_premise cond.atom1
-      state.add_conclusion cond.atom2
-      state.delete_conclusion cond
-    end
-    return state
-  end
-
-  def to_s
-    return "Cond. Concl."
-  end
-end
-
-class SubstituteEquivalents < Law
-  def apply state
-    puts "Enter the expression you want to substitute".cyan
-    vars = state.get_vars
-    vars, sub1 = parse_string(gets.strip, vars)
-    puts "Enter the expression you want to substitute it with".cyan
-    vars, sub2 = parse_string(gets.strip, vars)
-    return substitute_equivalents state, sub1, sub2
-  end
-
-  def substitute_equivalents state, sub1, sub2
-    if (not state.get_conclusion.any?{|x| x.is_equal? sub1} and not state.get_premises.any?{|x| x.is_equal? sub1})
-      raise LogicError
-    else
-      state.premises.select{|x| x.is_equal? sub1}.each do |equiv|
-        state.add_premise sub2
-        state.delete_premise sub1
-      end
-      state.conclusion.select{|x| x.is_equal? sub1}.each do |equiv|
-        state.add_conclusion sub2
-        state.delete_conclusion sub1
-      end
-    end
-    return state
-  end
-
-  def to_s
-    return "Subst. Equiv."
-  end
-end
-
-class Disjoining < Law
-  def apply state
-    raise LogicError unless state.disjoining?
-    return disjoin state
-  end
-  def disjoin state
-    state.premises.select{|x| not x.is_a? Variable and x.connective.is_a? If}.each do |cond|
-      puts "Disjoin conditional #{cond.to_s}?"
-      next unless is_affirmative? gets.chomp
-      state.add_premise cond.atom1
-      state.add_premise cond.atom2
-      state.delete_premise cond
-    end
-    return state
-  end
-  def to_s
-    return "Disj."
-  end
-end
-
-class ConjunctionPremise < Law
-  def apply state
-    raise LogicError unless state.conjunction_premise?
-    return conjunction_premise state
-  end
-  def conjunction_premise state
-    state.premises.select{|x| not x.is_a? Variable and x.connective.is_a? And}.each do |conj|
-      puts "Split #{conj} into #{conj.atom1} and #{conj.atom2}?"
-      next unless is_affirmative? gets.chomp
-      state.add_premise conj.atom1
-      state.add_premise conj.atom2
-      state.delete_premise conj
-    end
-    return state
-  end
-  def to_s
-    return "∧ | ⊫"
-  end
-end
-
-class ConjunctionConclusion < Law
-end
-
-class DisjunctionPremise < Law
-end
-
-class DisjunctionConclusion < Law
-  def apply state
-    raise LogicError unless state.disjunction_conclusion?
-    return disjunction_conclusion state
-  end
-
-  def disjunction_conclusion state
-    state.conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? Or}.each do |disj|
-      puts "Split #{disj} into #{disj.atom2} and move ¬#{disj.atom1} to premises?"
-      next unless is_affirmative? gets.chomp
-      new_wff = WFF.new(disj.atom1, Not.new)
-      state.add_premise new_wff
-      state.add_conclusion disj.atom2
-      state.delete_conclusion disj
-    end
-    return state
-  end
-  def to_s
-    return "⊫ | ∨"
-  end
-end
-
-def is_affirmative? string
-  return true if ["yes", "y", "yep"].include? string.downcase
-  return false
-end
-
-=begin
-    if ["monotonicity"].include? input.downcase
-      puts "Enter the formula you would like to add to the premises".blue
-      input = gets.strip
-      vars, new_wff = parse_string(input, vars)
-      step = Step.new @current_state, new_wff
-      @steps << step
-    else
-      begin
-        eval("implication.#{LAWS[input]}")
-      rescue LogicError
-        puts "You can't use #{input} here"
-      end
-=end
-
-=begin
-
-  def monotonicity! additional_wff
-    add_premise additional_wff
-  end
-
-  def inconsistent_premises?
-    #TODO Implement
-  end
-
-  def inconsistent_conclusion?
-    #TODO Implement
-  end
-
-
-  
-  def conjunction_conclusion?
-    return true unless @conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? And}.length == 0
-    return false
-  end
-
-
-  def conjunction_conclusion!
-    #TODO Implement
-    # Note that this requires splitting the derivation into two parts, which can be tricky to implement (not sure yet how)
-    # Similar problem applies to disjunction_premise
-  end
-
-
-
 =end

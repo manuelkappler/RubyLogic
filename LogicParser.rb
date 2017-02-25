@@ -1,4 +1,4 @@
-require './Logic'
+require './Connectives'
 
 # Takes strings such as "not A -> ( B and not ( C or not A ) )"
 # and turns them into a TruthTable containing various WFFs

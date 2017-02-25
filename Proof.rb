@@ -1,5 +1,5 @@
 require './Implication'
-require './Logic'
+require './Connectives'
 require './LogicParser'
 require 'colorize'
 require './ImplicationLaws'

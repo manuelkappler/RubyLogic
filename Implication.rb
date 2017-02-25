@@ -1,4 +1,4 @@
-require "./Logic"
+require "./Connectives"
 
 # Implemented Implication laws
 # Conditional conclusion

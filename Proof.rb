@@ -6,29 +6,6 @@ require './ImplicationLaws'
 
 LAWS = ['Conditional Conclusion', 'CC', 'Disjoining', 'DJ', 'Monotonicity', 'MO', 'Disjunction Conclusion', 'DC', 'Conjunction Premise', 'CP', 'Substitute Equivalents', 'SE']
 
-=begin
-  ProofTree
-  Node
-  | - State
-  | - Children
-
-  node1:  implication = law.apply initial_state
-          law = law
-          children = node2
-          done = fales
-  node2:  implication = law.apply parent.state
-          law = law
-          children = node3, node4
-          done = false
-  node3:  implication = law.apply parent.state
-          law = law
-          children = node5, node6
-          done = false
-  node4:  implication = law.apply parent.state
-          law = law
-          children = nil
-          done = true
-=end
 
 class ProofTree
 

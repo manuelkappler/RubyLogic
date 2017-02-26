@@ -28,8 +28,9 @@ class Implication
   end
 
   def to_s
-    return (@premises.map{|x| x.to_s}.join(", ") + " ⊫ " + @conclusion.map{|x| x.to_s}.join(", "))
+    return (@premises.map{|x| x.to_s}.join(", ") + " ⊧ " + @conclusion.map{|x| x.to_s}.join(", "))
   end
+  
 
   def get_vars
     vars = (self.premises.each_with_object([]){|prem, ary| ary << prem.get_vars} | self.conclusion.each_with_object([]){|conc, ary| ary << conc.get_vars}).flatten.uniq
@@ -90,16 +91,16 @@ class Implication
 
   def conjunction_premise?
     return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
-    return fals
+    return false
   end
 
-  def conjunction_concluion?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
-    return fals
+  def conjunction_conclusion?
+    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
+    return false
   end
 
   def disjoining?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If}
+    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If and @premises.any?{|y| y.is_equal x.atom1}}
     return false
   end
 

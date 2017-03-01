@@ -28,7 +28,7 @@ class Implication
   end
 
   def to_s
-    return (@premises.map{|x| x.to_s}.join(", ") + " ⊧ " + @conclusion.map{|x| x.to_s}.join(", "))
+    return (@premises.map{|x| x.to_s}.sort.join(", ") + " ⊧ " + @conclusion.map{|x| x.to_s}.sort.join(", "))
   end
   
 
@@ -39,7 +39,7 @@ class Implication
 
 
   def add_premise wff
-    unless @premises.include? wff
+    unless @premises.any?{|x| x.is_equal? wff}
       if @premises == [nil]
         @premises = [wff]
       else
@@ -51,7 +51,7 @@ class Implication
   end
 
   def add_conclusion wff
-    unless @conclusion.include? wff
+    unless @conclusion.any?{|x| x.is_equal? wff}
       @conclusion << wff
     else
       puts "Already present: #{wff.to_s}"
@@ -60,7 +60,7 @@ class Implication
 
   def delete_conclusion wff
     if @conclusion.any?{|x| x.is_equal? wff}
-      @conclusion.each{|x| @conclusion.delete x if x.is_equal? wff}
+      @conclusion.reject!{|x| x.is_equal? wff}
     else
       raise MissingWFFError
     end
@@ -94,13 +94,18 @@ class Implication
     return false
   end
 
+  def reverse_conjunction_premise?
+    return true if @premises.length > 1
+    return false
+  end
+
   def conjunction_conclusion?
     return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
     return false
   end
 
   def disjoining?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If and @premises.any?{|y| y.is_equal x.atom1}}
+    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If and @premises.any?{|y| y.is_equal? x.atom1}}
     return false
   end
 

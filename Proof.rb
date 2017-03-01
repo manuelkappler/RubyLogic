@@ -56,8 +56,9 @@ class ProofTree
       self.print
       return false
     elsif ["d", "done"].include? input.downcase
-      puts "Marking as done is not yet implemented"
-      return false
+      child.mark_as_aborted
+      self.print
+      exit
     else
       return input
     end
@@ -73,29 +74,37 @@ class ProofTree
   end
 
   def get_law_from_string string
-    case string
-    when "Conditional Conclusion", "IfCC"
-      law = ConditionalConclusion.new
-    when "Conjunction Premise", "CP"
-      law = ConjunctionPremise.new
-    when "Disjunction Conclusion", "DC"
-      law = DisjunctionConclusion.new
-    when "Substitution of Equivalents", "SE"
-      law = SubstituteEquivalents.new
-    when "Disjunction Premise", "DP"
-      law = DisjunctionPremise.new
-    when "Conjunction Conclusion", "AndCC"
-      law = ConjunctionConclusion.new
-    when "Monotonicity", "MO"
-      law = Monotonicity.new
-    when "Disjoining", "DJ"
-      law = Disjoining.new
-    when "Reverse Conjunction Premise", "RCP"
-      law = ReverseConjunctionPremise.new
-    else
+    laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
+    matches = laws.select{|x| x.to_s == string or x.abbrev == string}
+    if matches.empty?
+      puts "Can't find that law. Try again or enter 'h' to see a list of all the laws I can apply"
       return false
+    else
+      return matches[0].new
     end
-    return law
+#    case string
+#    when "Conditional Conclusion", "IfCC"
+#      law = ConditionalConclusion.new
+#    when "Conjunction Premise", "CP"
+#      law = ConjunctionPremise.new
+#    when "Disjunction Conclusion", "DC"
+#      law = DisjunctionConclusion.new
+#    when "Substitution of Equivalents", "SE"
+#      law = SubstituteEquivalents.new
+#    when "Disjunction Premise", "DP"
+#      law = DisjunctionPremise.new
+#    when "Conjunction Conclusion", "AndCC"
+#      law = ConjunctionConclusion.new
+#    when "Monotonicity", "MO"
+#      law = Monotonicity.new
+#    when "Disjoining", "DJ"
+#      law = Disjoining.new
+#    when "Reverse Conjunction Premise", "RCP"
+#      law = ReverseConjunctionPremise.new
+#    else
+#      return false
+#    end
+#    return law
   end
 
   def execute_law law, node
@@ -122,7 +131,7 @@ class ProofTree
     queue = [@root]
     until queue.empty?
       current = queue.shift
-      rows << [current.step, current.implication, current.law, ("✔" if current.done?)]
+      rows << [current.step, current.implication, current.law, (current.done? ? "✔" : ("✕" if current.abort?))]
       current.children.each{|x| queue << x}
     end
     table = Terminal::Table.new :rows => rows, :headings => header
@@ -142,10 +151,19 @@ class Node
     @children = []
     @step = step
     @done = @implication.trivial?
+    @abort = false
   end
 
   def get_previous_implication
     return @parent.implication
+  end
+
+  def mark_as_aborted
+    @abort = true
+  end
+
+  def abort?
+    return true if @abort
   end
 
   def add_child node

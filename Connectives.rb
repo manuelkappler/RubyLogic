@@ -12,6 +12,14 @@ class Atom
     end
   end
 
+  def is_unary?
+    if self.is_a? Variable
+      return true
+    else
+      return self.atom2.nil?
+    end
+  end
+
   def is_equal? other_atom
     if self.class != other_atom.class
 #      puts "Class mismatch #{self.inspect} #{other_atom.inspect}"
@@ -112,9 +120,6 @@ class WFF < Atom
     end
   end
 
-  def is_unary?
-    return @atom2.nil?
-  end
 
   def to_s
     if @atom1.is_a? Variable

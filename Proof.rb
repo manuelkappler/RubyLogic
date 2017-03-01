@@ -3,9 +3,7 @@ require './Connectives'
 require './LogicParser'
 require 'colorize'
 require './ImplicationLaws'
-
-LAWS = ['Conditional Conclusion', 'CC', 'Disjoining', 'DJ', 'Monotonicity', 'MO', 'Disjunction Conclusion', 'DC', 'Conjunction Premise', 'CP', 'Substitute Equivalents', 'SE']
-
+require 'terminal-table'
 
 class ProofTree
 
@@ -20,20 +18,29 @@ class ProofTree
       current = queue.shift
       unless queue.empty? and current.done?
         work_through current
+        self.print
         current.children.each{|x| queue << x unless x.done?}
       end
     end
-    self.print
   end
 
 
   def work_through node
     next_step = false
     until next_step
-      next_step = ask_for_next_step node
-      law = get_law_from_string next_step
+      law = false
+      while not law
+        next_step = ask_for_next_step node
+        law = get_law_from_string next_step
+      end
     end
-    (execute_law law, node).each{|x| node.add_child x}
+    begin
+      (execute_law law, node).each{|x| node.add_child x}
+    rescue LogicError => e
+      puts "This can't be done".on_light_red
+      puts e.message
+      work_through node
+    end
   end
 
   def ask_for_next_step child
@@ -43,7 +50,7 @@ class ProofTree
     if ["quit", "q"].include? input.downcase
       exit
     elsif ["h", "help"].include? input.downcase
-      print (LAWS.select{|x| x.length > 2}.join("; ") + "\n").magenta
+      print_all_available_laws (child.implication)
       return false
     elsif ["p", "print"].include? input.downcase
       self.print
@@ -54,6 +61,15 @@ class ProofTree
     else
       return input
     end
+  end
+
+  def get_all_available_laws state
+    return ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
+    # TODO: Implement rejecting any laws that can't be applied in current state
+  end
+
+  def print_all_available_laws state
+    get_all_available_laws(state).each{|l| puts "#{l.to_s} (#{l.abbrev})"}
   end
 
   def get_law_from_string string
@@ -74,6 +90,8 @@ class ProofTree
       law = Monotonicity.new
     when "Disjoining", "DJ"
       law = Disjoining.new
+    when "Reverse Conjunction Premise", "RCP"
+      law = ReverseConjunctionPremise.new
     else
       return false
     end
@@ -93,25 +111,29 @@ class ProofTree
       next_step = (node.step[0].to_i + 1).to_s + node.step.slice(1..-1)
       new_imp = Implication.new node.implication.get_premises, node.implication.get_conclusion
       new_imp = law.apply new_imp
-      new_nodes = [Node.new(new_imp, law, node, step)]
+      new_nodes = [Node.new(new_imp, law, node, next_step)]
     end
     return new_nodes
   end
 
   def print 
+    header = ["Step", "Implication", "Applied Laws", "✔"]
+    rows = []
     queue = [@root]
     until queue.empty?
       current = queue.shift
-      puts current.to_s
+      rows << [current.step, current.implication, current.law, ("✔" if current.done?)]
       current.children.each{|x| queue << x}
     end
+    table = Terminal::Table.new :rows => rows, :headings => header
+    puts table
   end
 
 end
 
 class Node
 
-  attr_reader :implication, :step, :children
+  attr_reader :implication, :step, :children, :law
 
   def initialize implication, law, parent, step
     @implication = implication

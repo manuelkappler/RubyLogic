@@ -65,7 +65,8 @@ class ProofTree
   end
 
   def get_all_available_laws state
-    return ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
+    laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
+    return laws
     # TODO: Implement rejecting any laws that can't be applied in current state
   end
 

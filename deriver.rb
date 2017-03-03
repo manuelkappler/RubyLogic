@@ -35,33 +35,10 @@ end
 
 def create_proof implication
   system "clear" or system "cls"
-  proof = Proof.new implication
-  while true
-    puts (proof.to_s).yellow
-    puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan
-    input = gets.chomp
-    if LAWS.include? input
-      begin
-        proof.add_step input
-#      rescue LogicError
-#        puts "Can't apply this here".red
-      rescue Exception => e
-        puts (e.message).light_yellow.on_red
-      end
-    elsif ["quit", "q"].include? input.downcase
-      break
-    elsif ["h", "help"].include? input.downcase
-      print (LAW_NAMES.join("; ") + "\n").purple
-    elsif ["p", "print"].include? input.downcase
-      puts "Printing is not yet implemented. Sorry"
-    elsif ["d", "done"].include? input.downcase
-      puts "Marking as done is not yet implemented"
-      break
-    end
-    if proof.done?
-      puts "Done!".green
-    end
-  end
+  pt = ProofTree.new implication
+#  proof = Proof.new implication
+#  proof.prove_with_user_input
+  pt.prove
 end
 
 implication = get_initial_implication

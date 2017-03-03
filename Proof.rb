@@ -82,29 +82,6 @@ class ProofTree
     else
       return matches[0].new
     end
-#    case string
-#    when "Conditional Conclusion", "IfCC"
-#      law = ConditionalConclusion.new
-#    when "Conjunction Premise", "CP"
-#      law = ConjunctionPremise.new
-#    when "Disjunction Conclusion", "DC"
-#      law = DisjunctionConclusion.new
-#    when "Substitution of Equivalents", "SE"
-#      law = SubstituteEquivalents.new
-#    when "Disjunction Premise", "DP"
-#      law = DisjunctionPremise.new
-#    when "Conjunction Conclusion", "AndCC"
-#      law = ConjunctionConclusion.new
-#    when "Monotonicity", "MO"
-#      law = Monotonicity.new
-#    when "Disjoining", "DJ"
-#      law = Disjoining.new
-#    when "Reverse Conjunction Premise", "RCP"
-#      law = ReverseConjunctionPremise.new
-#    else
-#      return false
-#    end
-#    return law
   end
 
   def execute_law law, node

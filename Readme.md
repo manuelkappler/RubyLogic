@@ -8,12 +8,19 @@ RubyLogic aims to do a slate of things helpful for students and teachers of logi
 
 ## Current State
 
-The repo at the moment focuses on deduction proofs. Starting the program (`ruby deriver.rb`) will prompt for input of a comma-separated set of premises and of conclusions; it then asks which implication law to use, applies it, and checks for contradictory premises.
+The repo at the moment focuses on deduction proofs. Starting the program (`ruby deriver.rb`) will prompt for input of a comma-separated set of premises and of conclusions; it then asks which implication law to use, applies it, and checks for validity.
 
 ## TODO
 
 Listed in decreasing order of importance
 
+- [ ] Allow for printing of proofs as TeX file
+- [ ] Allow for automated proofs
+- [x] Implement checking for premises including conclusion
+- [ ] Implement simplification via equivalence laws
+    - Mostly done. Missing:
+        - [ ] Reverse laws (esp. Reverse DeMorgan)
+- [ ] Merge `markdowntruthtable` into the project and create an overarching menu
 - Fully implement all implication laws
     - This involves implementing branching in the proof, which is what I'm currently working on
     - Full list:
@@ -23,9 +30,8 @@ Listed in decreasing order of importance
         - [x] Substitution of equivalents
         - [x] Disjoining of premises
         - [x] Monotonicity
-        - [ ]  Disjunction premise law (**Branching**)
-        - [ ]  Conjunction conclusion law (**Branching**)
-- [ ] Implement checking for premises including conclusion
-- [ ] Allow for printing of proofs as TeX file
-- [ ] Implement simplification via equivalence laws
-- [ ] Merge `markdowntruthtable` into the project and create an overarching menu
+        - [x] Disjunction premise law 
+        - [x] Conjunction conclusion law 
+        - [ ] Conjunction premise law
+        - [ ] Biconditional laws (premise/conclusion)
+        - [ ] Contradictory conclusion law (required for proofs by contradiction)

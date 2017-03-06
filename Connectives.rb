@@ -71,84 +71,12 @@ end
 
 class BinaryConnective < Connective
 
-  def or_idempotence
-    return false unless @connective.is_a? Or
-    #(@t1.is_a? Variable and @t2.is_a? Variable and @t1.to_s == @t2.to_s) ? return true : 
-    
-  end
-
-  def and_idempotence
-
-  end
-
-  def double_negation 
-
-  end
-
-  def distributivity 
-
-  end
-
-  def associativity
-
-  end
-
 end
 
 class Variable < Atom
   def initialize(symbol)
     @symbol = symbol
   end
-end
-
-class WFF < Atom
-
-  attr_reader(:atom1, :atom2, :connective)
-
-  def initialize(*args)
-    if args.size == 2
-      raise TypeError unless (args[1].is_a? UnaryConnective and args[0].is_a? Atom)
-      @atom1 = args[0]
-      @connective = args[1]
-    elsif args.size == 3
-      raise TypeError unless args[0].is_a? Atom and args[2].is_a? Atom and args[1].is_a? Connective
-      @atom1 = args[0]
-      @connective = args[1]
-      @atom2 = args[2]
-    else
-      raise ArgumentError 
-    end
-  end
-
-
-  def to_s
-    if @atom1.is_a? Variable
-      a1 = @atom1.to_s
-    else
-      a1 = "(#{@atom1.to_s})"
-    end
-    if is_unary?
-      return "#{@connective.to_s}#{a1}"
-    else
-      if @atom2.is_a? Variable
-        a2 = @atom2.to_s
-      else
-        a2 = "(#{@atom2.to_s})"
-      end
-      return "#{a1}#{@connective.to_s}#{a2}"
-    end
-  end
-
-  def eval(t1, t2=nil)
-    if t2.nil? and @atom2.nil?
-      return @connective.eval t1
-    elsif (t2.nil? and not @atom2.nil?) or (@atom2.nil? and not t2.nil?)
-      raise ArgumentError
-    else
-      return @connective.eval t1, t2
-    end
-  end
-
 end
 
 class And < BinaryConnective

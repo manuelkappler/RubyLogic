@@ -1,3 +1,15 @@
 th.prooftable{
     text-align: left;
 }
+div.instruction{
+    visibility:  hidden;
+    color: orange;
+    font-weight: bold;
+}
+div.wff{
+    display: inline;
+}
+div.wff.selected{
+    border: 5px solid orange;
+}
+

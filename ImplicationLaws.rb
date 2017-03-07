@@ -10,11 +10,14 @@ end
 class Given < Law
   @available = false
 
-  def apply state
+  def apply state, wff=nil
     return state
   end
   def to_s
     return "Given"
+  end
+  def to_latex
+    return "(Given)"
   end
 end
 
@@ -23,22 +26,30 @@ class ConditionalConclusion < Law
   @available = true
   @abbrev = "IfCon"
 
-  def apply state
+  def apply state, wff
     raise LogicError unless state.conditional_conclusion?
-    return conditional_conclusion state
+    return conditional_conclusion state, wff
   end
 
-  def conditional_conclusion state
-    conclusion_conditionals = state.conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? If}
-    cond = resolve_ambiguities conclusion_conditionals, self.to_s
-    state.add_premise cond.atom1
-    state.add_conclusion cond.atom2
-    state.delete_conclusion cond
+  def self.applies? wff, premise
+    return false if premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? If
+    return false
+  end
+
+  def conditional_conclusion state, wff
+    state.add_premise wff.atom1
+    state.add_conclusion wff.atom2
+    state.delete_conclusion wff
     return state
   end
 
   def to_s
     return "Cond. Concl."
+  end
+
+  def to_latex
+    return "(\\models, \\rightarrow)"
   end
 end
 
@@ -46,105 +57,98 @@ class SubstituteEquivalents < Law
   @available = true
   @abbrev = "SubEq"
 
-  def apply state
-    possible_equivalences = {}
-    state.premises.each{|x| possible_equivalences.merge! find_all_equivalences x}
-    state.conclusion.each{|x| possible_equivalences.merge! find_all_equivalences x}
-    possible_equivalences.reject!{|key, value| value.empty?}
-    possible_equivalences.each{|k, v| puts "For subcomponent #{k.to_s}:"; v.each{|sub| puts "\t#{sub.to_s} => #{(sub.new k).wff.to_s}"}}
-    chosen_wff = resolve_ambiguities possible_equivalences.keys.reject{|x| possible_equivalences[x].empty?}, "one of the above mentioned substitutions"
-    chosen_sub = resolve_ambiguities possible_equivalences[chosen_wff], "the substitution to be applied"
-    return substitute_equivalents state, chosen_wff, (chosen_sub.new chosen_wff).wff
-  end
-
-  def has_wff? element, wff
-    if element.is_equal? wff
-      return true
-    else
-      if element.is_a? Variable
-        return false
-      elsif element.is_unary? 
-        return has_wff? element.atom1, wff 
-      else
-        return (has_wff? element.atom1, wff or has_wff? element.atom2, wff)
-      end
-    end
+  def self.applies? wff, premise
+    possible_equivs = find_all_equivalences wff
+    return possible_equivs[wff] if possible_equivs.length > 0
     return false
   end
 
-  def replace_wff element, sub1, sub2
-    if element.is_equal? sub1
-      return sub2
-    else
-      if element.is_unary?
-        return WFF.new((replace_wff element.atom1, sub1, sub2), element.connective)
-      else
-        if has_wff? element.atom1, sub1
-          return WFF.new((replace_wff(element.atom1, sub1, sub2)), element.connective, element.atom2)
-        else
-          return WFF.new(element.atom1, element.connective, (replace_wff element.atom2, sub1, sub2))
-        end
-      end
-    end
+  def apply state, wff, idx 
+    possible_subs = find_all_equivalences(wff)[wff]
+    return (substitute_equivalents state, wff, (possible_subs[idx].new wff))
   end
 
-  def substitute_equivalents state, sub1, sub2
-    state.premises.select{|x| has_wff? x, sub1}.each do |equiv|
-      state.add_premise replace_wff equiv, sub1, sub2
-      state.delete_premise equiv
+
+  def substitute_equivalents state, wff, equiv
+    puts equiv.wff.to_s
+    if state.premises.any?{|x| x.is_equal? wff}
+      puts "Trying to replace premise"
+      state.add_premise equiv.wff
+      state.delete_premise wff
+    else
+      puts "Trying to replace conclusion"
+      state.add_conclusion equiv.wff
+      state.delete_conclusion wff
     end
-    state.conclusion.select{|x| has_wff? x, sub1}.each do |equiv|
-      state.add_conclusion replace_wff equiv, sub1, sub2
-      state.delete_conclusion equiv
-    end
+    puts state
     return state
   end
 
   def to_s
     return "Subst. Equiv."
   end
+
+  def to_latex
+    return "(SubEq.)"
+  end
 end
 
-class Disjoining < Law
+class ConditionalPremise < BranchingLaw
 
   @available = true
-  @abbrev = "DJ"
+  @abbrev = "IfPre"
 
-  def apply state
-    raise LogicError unless state.disjoining?
-    return disjoin state
+  def self.applies? wff, premise
+    return false unless premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? If
+    return false
   end
-  def disjoin state
-    premise_conditionals = state.premises.select{|x| not x.is_a? Variable and x.connective.is_a? If and state.premises.any?{|y| y.is_equal? x.atom1}}
-    cond = resolve_ambiguities premise_conditionals, self.to_s
-    state.add_premise cond.atom1
-    state.add_premise cond.atom2
-    state.delete_premise cond
-    return state
+
+  def apply imp1, imp2, wff
+    return condprem imp1, imp2, wff
+  end
+
+  def condprem imp1, imp2, wff
+    imp1.add_premise WFF.new(wff.atom1, Not.new) 
+    puts imp1
+    imp1.delete_premise wff
+    puts imp1
+    imp2.add_premise wff.atom2
+    imp2.delete_premise wff
+    return [imp1, imp2]
   end
   def to_s
-    return "Disj."
+    return "Cond. Premise"
+  end
+  def to_latex
+    return "(\\rightarrow, \\models)"
   end
 end
 
 class ConjunctionPremise < Law
   @available = true
   @abbrev = "ConPre"
-  def apply state
-    raise LogicError unless state.conjunction_premise?
-    return conjunction_premise state
+  def apply state, wff
+    return conjunction_premise state, wff
   end
 
-  def conjunction_premise state
-    premise_conjunctions = state.premises.select{|x| not x.is_a? Variable and x.connective.is_a? And}
-    conjunction = resolve_ambiguities premise_conjunctions, self.to_s
-    state.add_premise conjunction.atom1
-    state.add_premise conjunction.atom2
-    state.delete_premise conjunction
+  def self.applies? wff, premise
+    return false unless premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? And
+    return false
+  end
+
+  def conjunction_premise state, wff
+    state.add_premise wff.atom1
+    state.add_premise wff.atom2
+    state.delete_premise wff
     return state
   end
   def to_s
     return "(∧, ⊧)"
+  end
+  def to_latex
+    return "(\\wedge, \\models)"
   end
 end
 
@@ -155,6 +159,10 @@ class ReverseConjunctionPremise < Law
   def apply state
     raise LogicError unless state.reverse_conjunction_premise?
     return reverse_conjunction_premise state
+  end
+
+  def self.applies? wff, premise
+    return false
   end
 
   def reverse_conjunction_premise state
@@ -179,28 +187,39 @@ class ReverseConjunctionPremise < Law
   def to_s
     return "(∧, ⊧)"
   end
+  def to_latex
+    return "(\\wedge, \\models)"
+  end
 end
 
 class ConjunctionConclusion < BranchingLaw
   @available = true
   @abbrev = "AndCon"
-  def apply imp1, imp2
+
+  def apply imp1, imp2, wff
     raise LogicError unless imp1.conjunction_conclusion?
-    return conjunction_conclusion imp1, imp2
+    return conjunction_conclusion imp1, imp2, wff
   end
 
-  def conjunction_conclusion imp1, imp2
-    conclusion_conjunctions = imp1.conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? And}
-    conjunction = resolve_ambiguities conclusion_conjunctions, self.to_s
-    imp1.add_conclusion conjunction.atom1
-    imp1.delete_conclusion conjunction
-    imp2.add_conclusion conjunction.atom2
-    imp2.delete_conclusion conjunction 
+  def self.applies? wff, premise
+    return false if premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? And
+    return false
+  end
+
+  def conjunction_conclusion imp1, imp2, wff
+    imp1.add_conclusion wff.atom1
+    imp1.delete_conclusion wff 
+    imp2.add_conclusion wff.atom2
+    imp2.delete_conclusion wff
     return [imp1, imp2]
   end
 
   def to_s
     return "(⊧, ∧)"
+  end
+  def to_latex
+    return "(\\models, \\wedge)"
   end
 end
 
@@ -208,46 +227,64 @@ class DisjunctionPremise < BranchingLaw
   @available = true
   @abbrev = "OrPre"
 
-  def apply imp1, imp2
+  def apply imp1, imp2, wff
     raise LogicError unless imp1.disjunction_premise?
-    return disjunction_premise imp1, imp2
+    return disjunction_premise imp1, imp2, wff
   end
 
-  def disjunction_premise imp1, imp2
-    premise_disjunctions = imp1.premises.select{|x| not x.is_a? Variable and x.connective.is_a? Or}
-    disjunction = resolve_ambiguities premise_disjunctions, self.to_s
-    imp1.add_premise disjunction.atom1
-    imp1.delete_premise disjunction
-    imp2.add_premise disjunction.atom2
-    imp2.delete_premise disjunction
+  def self.applies? wff, premise
+    return false unless premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? Or
+    return false
+  end
+
+  def disjunction_premise imp1, imp2, wff
+    imp1.add_premise wff.atom1
+    imp1.delete_premise wff
+    imp2.add_premise wff.atom2
+    imp2.delete_premise wff
     return [imp1, imp2]
   end
 
   def to_s
     return "(∨, ⊧)"
   end
+
+  def to_latex
+    return "(\\vee, \\models)"
+  end
 end
 
 class DisjunctionConclusion < Law
+
   @available = true
   @abbrev = "OrCon"
-  def apply state
+
+  def apply state, wff
     raise LogicError unless state.disjunction_conclusion?
-    return disjunction_conclusion state
+    return disjunction_conclusion state, wff
   end
 
-  def disjunction_conclusion state
+  def self.applies? wff, premise
+    return false if premise
+    return true if not wff.is_a? Variable and wff.connective.is_a? Or
+    return false
+  end
 
-    conc_disjs = state.conclusion.select{|x| not x.is_a? Variable and x.connective.is_a? Or}
-    disj = resolve_ambiguities conc_disjs, self.to_s
-    new_wff = WFF.new(disj.atom1, Not.new)
+  def disjunction_conclusion state, wff
+
+    new_wff = WFF.new(wff.atom1, Not.new)
     state.add_premise new_wff
-    state.add_conclusion disj.atom2
-    state.delete_conclusion disj
+    state.add_conclusion wff.atom2
+    state.delete_conclusion wff
     return state
   end
   def to_s
     return "(⊧, ∨)"
+  end
+
+  def to_latex
+    return "(\\models, \\vee)"
   end
 
 end
@@ -311,4 +348,47 @@ end
 
 
 
+=end
+=begin
+         def apply state
+    possible_equivalences = {}
+    state.premises.each{|x| possible_equivalences.merge! find_all_equivalences x}
+    state.conclusion.each{|x| possible_equivalences.merge! find_all_equivalences x}
+    possible_equivalences.reject!{|key, value| value.empty?}
+    possible_equivalences.each{|k, v| puts "For subcomponent #{k.to_s}:"; v.each{|sub| puts "\t#{sub.to_s} => #{(sub.new k).wff.to_s}"}}
+    chosen_wff = resolve_ambiguities possible_equivalences.keys.reject{|x| possible_equivalences[x].empty?}, "one of the above mentioned substitutions"
+    chosen_sub = resolve_ambiguities possible_equivalences[chosen_wff], "the substitution to be apllied"
+    return substitute_equivalents state, chosen_wff, (chosen_sub.new chosen_wff).wff
+  end
+
+  def has_wff? element, wff
+    if element.is_equal? wff
+      return true
+    else
+      if element.is_a? Variable
+        return false
+      elsif element.is_unary? 
+        return has_wff? element.atom1, wff 
+      else
+        return (has_wff? element.atom1, wff or has_wff? element.atom2, wff)
+      end
+    end
+    return false
+  end
+
+  def replace_wff element, sub1, sub2
+    if element.is_equal? sub1
+      return sub2
+    else
+      if element.is_unary?
+        return WFF.new((replace_wff element.atom1, sub1, sub2), element.connective)
+      else
+        if has_wff? element.atom1, sub1
+          return WFF.new((replace_wff(element.atom1, sub1, sub2)), element.connective, element.atom2)
+        else
+          return WFF.new(element.atom1, element.connective, (replace_wff element.atom2, sub1, sub2))
+        end
+      end
+    end
+  end
 =end

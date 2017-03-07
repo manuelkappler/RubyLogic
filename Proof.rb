@@ -9,73 +9,57 @@ class ProofTree
 
   def initialize given_implication
     law = Given.new
-    @root = execute_law(law, given_implication)
+    @root = execute_law(law, given_implication, nil)
+    @queue = [@root]
+    @valid = nil
+    @last_child = @root
   end
 
-  def prove
-    queue = [@root]
-    until queue.empty?
-      current = queue.shift
-      unless queue.empty? and current.done?
-        work_through current
-        self.print
-        current.children.each{|x| queue << x unless x.done?}
-      end
-    end
-  end
-
-
-  def work_through node
-    next_step = false
-    until next_step
-      law = false
-      while not law
-        next_step = ask_for_next_step node
-        law = get_law_from_string next_step
-      end
-    end
-    begin
-      (execute_law law, node).each{|x| node.add_child x}
-    rescue LogicError => e
-      puts "This can't be done".on_light_red
-      puts e.message
-      work_through node
-    end
-  end
-
-  def ask_for_next_step child
-    puts "Working on #{child.to_s}".cyan
-    puts "What implication law do you want to apply? (Type h to see a list of available laws, q to quit, d to mark current branch as done, p to print current state)".cyan
-    input = gets.chomp
-    if ["quit", "q"].include? input.downcase
-      exit
-    elsif ["h", "help"].include? input.downcase
-      print_all_available_laws (child.implication)
-      return false
-    elsif ["p", "print"].include? input.downcase
-      self.print
-      return false
-    elsif ["d", "done"].include? input.downcase
-      child.mark_as_aborted
-      self.print
-      exit
+  def apply_step law, wff, resolve_ambiguity=nil
+    if @queue.empty?
+      @valid = true
     else
-      return input
+      current = @queue.shift
+      result = execute_law law, current, wff, resolve_ambiguity
+      result.each{|res| current.add_child res}
+      current.children.each{|child| @queue << child unless (child.done? or child.abort?)}
+      (@valid = false; @queue = []; @last_child = current.children.select{|x| x.abort?}[0]) if current.children.any?{|x| x.abort?}
+      @valid = true if @queue.empty? and @valid.nil?
     end
   end
 
-  def get_all_laws
+  def valid?
+    return @valid
+  end
+
+  def get_counterexample
+    return false if @valid.nil? or @valid
+    puts @last_child
+    atoms_prem = @last_child.implication.premises.map{|x| (x.is_a? Variable) ? "#{x.to_s} = T" : "#{x.atom1.to_s} = F"}
+    puts atoms_prem
+    atoms_conc = @last_child.implication.conclusion.map{|x| (x.is_a? Variable) ? "#{x.to_s} = F" : "#{x.atom1.to_s} = T"}
+    puts atoms_conc
+    atoms = atoms_prem.concat(atoms_conc).uniq
+    return atoms.join(", ")
+  end
+
+  def get_current_step_wffs
+    return false if @queue.empty? 
+    return @queue[0].hash_of_premise_conclusion_wffs
+  end
+
+  def get_current_node
+    return false if @queue.empty? 
+    return @queue[0]
+  end
+
+  def get_applicable_laws_for_wff wff, premise = true
     laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
-    return laws
-    # TODO: Implement rejecting any laws that can't be applied in current state
-  end
-
-  def get_available_law_array state
-    return ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}.map{|law| law.to_s}
-  end
-
-  def print_all_available_laws state
-    get_all_available_laws(state).each{|l| puts "#{l.to_s} (#{l.abbrev})"}
+    if premise
+      return laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, true}
+    else
+      return laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, false}
+    end
   end
 
   def get_law_from_string string
@@ -89,19 +73,23 @@ class ProofTree
     end
   end
 
-  def execute_law law, node
+  def execute_law law, node, wff, resolve_ambiguity=nil
     if law.is_a? Given
       return Node.new(node, law, nil, "1")
     elsif law.is_a? BranchingLaw
       next_step = (node.step[0].to_i + 1).to_s + node.step.slice(1..-1)
       new_imp1 = Implication.new node.implication.get_premises, node.implication.get_conclusion
       new_imp2 = Implication.new node.implication.get_premises, node.implication.get_conclusion
-      imps = law.apply new_imp1, new_imp2
+      imps = law.apply new_imp1, new_imp2, wff
       new_nodes = imps.map.with_index{|x, idx| Node.new(x, law, node, next_step + ".#{idx + 1}")}
     else
       next_step = (node.step[0].to_i + 1).to_s + node.step.slice(1..-1)
       new_imp = Implication.new node.implication.get_premises, node.implication.get_conclusion
-      new_imp = law.apply new_imp
+      if resolve_ambiguity.nil?
+        new_imp = law.apply new_imp, wff
+      else
+        new_imp = law.apply new_imp, wff, resolve_ambiguity
+      end
       new_nodes = [Node.new(new_imp, law, node, next_step)]
     end
     return new_nodes
@@ -125,7 +113,7 @@ class ProofTree
     queue = [@root]
     until queue.empty?
       current = queue.shift
-      rows << [current.step, "\\[ #{current.implication.to_latex} \\]", current.law.to_s, (current.done? ? "✔" : (current.abort? ? "✕" : ""))]
+      rows << [current.step, "\\[ #{current.implication.to_latex} \\]", "\\[ #{current.law.to_latex} \\]", (current.done? ? "✔" : (current.abort? ? "✕" : ""))]
       current.children.each{|x| queue << x}
     end
     return rows
@@ -143,8 +131,8 @@ class Node
     @parent = parent
     @children = []
     @step = step
-    @done = @implication.trivial?
-    @abort = false
+    @done = @implication.trivial? 
+    @abort = (not @done and @implication.elementary?)
   end
 
   def get_previous_implication
@@ -177,6 +165,10 @@ class Node
 
   def to_s 
     return "#{@step} \t #{@implication} \t \t \t #{@law} \t #{"✔" if @done} \n"
+  end
+
+  def hash_of_premise_conclusion_wffs
+    return {:premises => @implication.get_premises.sort, :conclusion => @implication.get_conclusion.sort}
   end
 
 end

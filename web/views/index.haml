@@ -11,28 +11,56 @@
   function getBaseUrl() {
       return window.location.href.match(/^.*\//);
   }
-  function refresh_available_laws(){
+
+  function get_laws(id){
     $('#availablelaws span').remove();
-    $.get(getBaseUrl() + "get_laws", function(data){
+    $.get(getBaseUrl() + "get_laws/" + id, function(data){
       var lawdiv = $("#availablelaws");
-      var laws = data;
-      $.each(laws, function(index, value){
-        lawdiv.append('<span class="lawspan" id="' + value + '"> ' + value +'</span>');
+      $.each(data, function(index, value){
+        if (value == true){
+          lawdiv.append('<div class="law_item" id="' + index + '"> ' + index +'</div>');
+          }
+        else{
+          var law = index
+          $.each(value, function(index, value){
+            lawdiv.append('<div class="law_item" id="' + law + '_' + index + '"> ' + law + ': ' + value +'</div>');
+          })
+        }
+
       });
-      }
-      )
+      })
+    $('#select_law').css('visibility', 'visible');
   }
 
   
   function refresh_proof_table(data){
     $('#prooftable tbody tr').remove();
     $.each(data, function(index, value){
-      var newrow = ('<tr><td>' + value[0] + '</td><td> <span id="proofrow' + index + '">' + value[1] + '</span></td><td>' + value[2] + '</td><td>' + value[3] + '</td></tr>');
-      console.log(newrow);
+      var newrow = ('<tr><td>' + value[0] + '</td><td> <span id="proofrow' + index + '">' + value[1] + '</span></td><td><span id="lawrow' + index + '">' + value[2] + '</span></td><td>' + value[3] + '</td></tr>');
       $('#prooftable tbody').append(newrow)
       var proofspan = $("#proofrow" + index).get();
       MathJax.Hub.Queue(["Typeset", MathJax.Hub, proofspan]);
+      var lawspan = $("#lawrow" + index).get();
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, lawspan]);
     });
+  }
+
+  function refresh_next_step(data){
+    $('#workingon').html("")
+    $.each(data.premises, function(index, value){
+      var premise_separator = index + 1 < data.premises.length ? ', ' : ''
+      var new_element = '<div class="wff" id="premise' + index + '"> \\(' + value + '\\)' + premise_separator + '</div>';
+      $('#workingon').append(new_element);
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#workingon_element' + index).get()]);
+    });
+    $('#workingon').append('<span class="implication_separator">\\(\\models\\)</span>')
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('.implication_separator').get()]);
+    $.each(data.conclusion, function(index,value){
+      var new_element = '<div class="wff" id="conclusion' + index + '"> \\(' + value + '\\) </div>';
+      $('#workingon').append(new_element);
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#workingon_conclusion' + index).get()]);
+    })
+    $('#select_component').css('visibility', 'visible');
   }
 
 
@@ -43,28 +71,53 @@
         getBaseUrl() + "formula_string", 
         {"premises": $("#premises").val(), "conclusion": $("#conclusion").val()}, 
         function(data){
-          console.log(JSON.parse(data));
-          refresh_proof_table(JSON.parse(data));
-          refresh_available_laws()}
-        )
+          var data = JSON.parse(data)
+          refresh_proof_table(data.proof);
+          console.log(data.next_step);
+          refresh_next_step(data.next_step);
+        })
       });
     });
 
-  $(document).on('click', '.lawspan', function(event) {
+  $(document).on('click', '.law_item', function(event) {
+    // TODO: ask which substitution to apply if sub-equiv selected
+    console.log({"law": $(this).attr("id"), "element": $('.wff.selected').attr("id")})
     $.post(
       getBaseUrl() + "apply_law",
-      {"law": event.target.id},
+      {"law": $(this).attr("id"), "element": $('.wff.selected').attr("id")},
       function(data){
-        console.log(data)
+          console.log(data)
+          if(data.message == "more"){
+            refresh_proof_table(data.proof);
+            console.log(data.next_step)
+            refresh_next_step(data.next_step);
+          }
+          else{
+            refresh_proof_table(data.proof);
+            if(data.message == "valid"){
+            $('#select_component').css("visibility", "hidden");
+            $('#workingon').html("You are done. The implication is valid.")
+            }
+            else{
+              $('#select_component').css("visibility", "hidden");
+              $('#workingon').html("You are done. The implication is invalid. Counterexample:  " + data.counterexample)
+            }
+          }
+          $('#select_law').css("visibility", "hidden")
+          $('#availablelaws').html("")
         }
       );
-  // Implement checking which law was clicked on
-  // Post request to handler to get proof and next step
+  });
+
+  $(document).on('click', '.wff', function(event) {
+    // TODO: ask which substitution to apply if sub-equiv selected
+    $('.wff.selected').removeClass("selected")
+    $(this).addClass("selected")
+    get_laws($(this).closest('.wff').attr("id"))
   });
 
 
-
-%h1 Logic Proof tool
+%h1 Logic Proof Tool
 #content
   .implication_input
     %h2 Enter your formula
@@ -84,4 +137,7 @@
       %tbody
   .next_step
     %h2 Next step
+    .instruction#select_component    Select a component to work on
+    #workingon
+    .instruction#select_law    Select which law to apply
     #availablelaws

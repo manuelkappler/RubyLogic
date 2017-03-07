@@ -19,6 +19,12 @@ class Implication
     return false
   end
 
+  def elementary?
+    return true if @premises.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)} and @conclusion.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)}
+    return false
+  end
+                                                        
+
   def get_premises
     return @premises.clone
   end
@@ -42,12 +48,14 @@ class Implication
 
 
   def add_premise wff
+    puts "Adding premise #{wff.inspect}"
     unless @premises.any?{|x| x.is_equal? wff}
       if @premises == [nil]
         @premises = [wff]
       else
         @premises << wff
       end
+      puts @premises
     else
       puts "Already present: #{wff.to_s}"
     end
@@ -62,17 +70,17 @@ class Implication
   end
 
   def delete_conclusion wff
-    if @conclusion.any?{|x| x.is_equal? wff}
-      @conclusion.reject!{|x| x.is_equal? wff}
-    else
+    begin
+      @conclusion.delete wff
+    rescue
       raise MissingWFFError
     end
   end
 
   def delete_premise wff
-    if @premises.any?{|x| x.is_equal? wff}
-      @premises.each{|x| @premises.delete x if x.is_equal? wff}
-    else
+    begin
+      @premises.delete wff
+    rescue
       raise MissingWFFError
     end
   end

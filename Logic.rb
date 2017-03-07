@@ -1,4 +1,5 @@
 class Atom
+  include Comparable
   def to_s
     return @symbol
   end
@@ -20,7 +21,7 @@ class Atom
     elsif self.is_a? Variable or other_atom.is_a? Variable
 #      puts "Two variables? #{self.inspect} #{other_atom.inspect}"
 #      puts "#{self == other_atom}"
-      return self == other_atom
+      return self.to_s == other_atom.to_s
     elsif self.is_unary? != other_atom.is_unary?
 #      puts "Unary mismatch. #{self.inspect} #{other_atom.inspect}"
       return false
@@ -33,6 +34,12 @@ class Atom
 #      puts "Recurse. #{self.inspect} #{other_atom.inspect}"
       return (self.atom1.is_equal? other_atom.atom1 and self.atom2.is_equal? other_atom.atom2 and self.connective.is_a? other_atom.connective.class)
     end
+  end
+
+  def <=> other_atom
+    return 0 if self.is_equal? other_atom
+    return 1 if other_atom.to_s <= self.to_s
+    return -1 
   end
 
 end

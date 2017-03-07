@@ -152,46 +152,6 @@ class ConjunctionPremise < Law
   end
 end
 
-class ReverseConjunctionPremise < Law
-  @available = true
-  @abbrev = "RConPre"
-
-  def apply state
-    raise LogicError unless state.reverse_conjunction_premise?
-    return reverse_conjunction_premise state
-  end
-
-  def self.applies? wff, premise
-    return false
-  end
-
-  def reverse_conjunction_premise state
-    premises = state.premises
-    if premises.length > 2
-      conjunct1 = resolve_ambiguities premises, "Premises to Conjunction"
-    else
-      conjunct1 = premises[0]
-      conjunct2 = premises[1]
-    end
-    remaining_premises = premises.reject{|x| x.is_equal? conjunct1}
-    if remaining_premises.length > 1
-      conjunct2 = resolve_ambiguities remaining_premises, "Premises to Conjuction"
-    else
-      conjunct2 = remaining_premises[0]
-    end
-    state.add_premise WFF.new(conjunct1, And.new, conjunct2)
-    state.delete_premise conjunct1
-    state.delete_premise conjunct2
-    return state
-  end
-  def to_s
-    return "(∧, ⊧)"
-  end
-  def to_latex
-    return "(\\wedge, \\models)"
-  end
-end
-
 class ConjunctionConclusion < BranchingLaw
   @available = true
   @abbrev = "AndCon"

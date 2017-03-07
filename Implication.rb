@@ -1,4 +1,4 @@
-require "./Connectives"
+require_relative "Connectives"
 
 # Implemented Implication laws
 # Conditional conclusion
@@ -31,6 +31,9 @@ class Implication
     return (@premises.map{|x| x.to_s}.sort.join(", ") + " ⊧ " + @conclusion.map{|x| x.to_s}.sort.join(", "))
   end
   
+  def to_latex
+    return (@premises.map{|x| x.to_latex}.sort.join(", ") + " \\models " + @conclusion.map{|x| x.to_latex}.sort.join(", "))
+  end
 
   def get_vars
     vars = (self.premises.each_with_object([]){|prem, ary| ary << prem.get_vars} | self.conclusion.each_with_object([]){|conc, ary| ary << conc.get_vars}).flatten.uniq

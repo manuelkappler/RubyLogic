@@ -1,0 +1,87 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+%link(rel="stylesheet" type="text/css" href="styles.css")
+
+:javascript 
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+
+  function getBaseUrl() {
+      return window.location.href.match(/^.*\//);
+  }
+  function refresh_available_laws(){
+    $('#availablelaws span').remove();
+    $.get(getBaseUrl() + "get_laws", function(data){
+      var lawdiv = $("#availablelaws");
+      var laws = data;
+      $.each(laws, function(index, value){
+        lawdiv.append('<span class="lawspan" id="' + value + '"> ' + value +'</span>');
+      });
+      }
+      )
+  }
+
+  
+  function refresh_proof_table(data){
+    $('#prooftable tbody tr').remove();
+    $.each(data, function(index, value){
+      var newrow = ('<tr><td>' + value[0] + '</td><td> <span id="proofrow' + index + '">' + value[1] + '</span></td><td>' + value[2] + '</td><td>' + value[3] + '</td></tr>');
+      console.log(newrow);
+      $('#prooftable tbody').append(newrow)
+      var proofspan = $("#proofrow" + index).get();
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, proofspan]);
+    });
+  }
+
+
+  
+  $(document).ready(function (){
+    $("#submit").on("click", function() {
+      $.post(
+        getBaseUrl() + "formula_string", 
+        {"premises": $("#premises").val(), "conclusion": $("#conclusion").val()}, 
+        function(data){
+          console.log(JSON.parse(data));
+          refresh_proof_table(JSON.parse(data));
+          refresh_available_laws()}
+        )
+      });
+    });
+
+  $(document).on('click', '.lawspan', function(event) {
+    $.post(
+      getBaseUrl() + "apply_law",
+      {"law": event.target.id},
+      function(data){
+        console.log(data)
+        }
+      );
+  // Implement checking which law was clicked on
+  // Post request to handler to get proof and next step
+  });
+
+
+
+%h1 Logic Proof tool
+#content
+  .implication_input
+    %h2 Enter your formula
+    %input#premises{:type => "text"}
+    ⊨
+    %input#conclusion{:type => "text"}
+    %input#submit{:type => "submit"}
+  .proof_table
+    %h2 Proof
+    %table#prooftable{:style => "width: 60%"}
+      %thead
+        %tr
+          %th.prooftable Step
+          %th.prooftable Implication
+          %th.prooftable Law
+          %th.prooftable ✔/✘
+      %tbody
+  .next_step
+    %h2 Next step
+    #availablelaws

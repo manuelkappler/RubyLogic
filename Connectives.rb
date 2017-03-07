@@ -92,6 +92,11 @@ class And < BinaryConnective
       return false
     end
   end
+
+  def to_latex
+    return "\\wedge"
+  end
+
 end
 
 class Or < BinaryConnective
@@ -109,6 +114,11 @@ class Or < BinaryConnective
       return false
     end
   end
+
+  def to_latex
+    return "\\vee"
+  end
+
 end
 
 class If < BinaryConnective
@@ -127,6 +137,10 @@ class If < BinaryConnective
     else
       return true
     end
+  end
+
+  def to_latex
+    return "\\rightarrow"
   end
 end
 
@@ -151,6 +165,10 @@ class Iff < BinaryConnective
       end
     end
   end
+
+  def to_latex
+    return "\\leftrightarrow"
+  end
 end
 
 
@@ -166,6 +184,9 @@ class Not < UnaryConnective
     else
       return true
     end
+  end
+  def to_latex
+    return "\\neg"
   end
 end
 

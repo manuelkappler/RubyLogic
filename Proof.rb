@@ -1,8 +1,8 @@
-require './Implication'
-require './Connectives'
-require './LogicParser'
+require_relative 'Implication'
+require_relative 'Connectives'
+require_relative 'LogicParser'
 require 'colorize'
-require './ImplicationLaws'
+require_relative 'ImplicationLaws'
 require 'terminal-table'
 
 class ProofTree
@@ -64,10 +64,14 @@ class ProofTree
     end
   end
 
-  def get_all_available_laws state
+  def get_all_laws
     laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
     return laws
     # TODO: Implement rejecting any laws that can't be applied in current state
+  end
+
+  def get_available_law_array state
+    return ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}.map{|law| law.to_s}
   end
 
   def print_all_available_laws state
@@ -114,6 +118,17 @@ class ProofTree
     end
     table = Terminal::Table.new :rows => rows, :headings => header
     puts table
+  end
+
+  def to_latex 
+    rows = []
+    queue = [@root]
+    until queue.empty?
+      current = queue.shift
+      rows << [current.step, "\\[ #{current.implication.to_latex} \\]", current.law.to_s, (current.done? ? "✔" : (current.abort? ? "✕" : ""))]
+      current.children.each{|x| queue << x}
+    end
+    return rows
   end
 
 end

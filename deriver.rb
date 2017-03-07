@@ -1,6 +1,6 @@
-require "./LogicParser"
-require "./Implication"
-require "./Proof"
+require_relative "LogicParser"
+require_relative "Implication"
+require_relative "Proof"
 require 'colorize'
 
 LAW_NAMES = ['Conditional Conclusion (CC)', 'Disjoining (DJ)', 'Monotonicity (MO)', 'Disjunction Conclusion (DC)' , 'Conjunction Premise (CP)']

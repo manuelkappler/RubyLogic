@@ -1,4 +1,4 @@
-require './Equivalences'
+require_relative 'Equivalences'
 
 class Law
   class << self; attr_reader :available, :abbrev end

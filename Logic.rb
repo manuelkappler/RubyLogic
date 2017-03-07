@@ -91,6 +91,10 @@ class Variable < Atom
   def initialize(symbol)
     @symbol = symbol
   end
+
+  def to_latex
+    return @symbol.to_s
+  end
 end
 
 class WFF < Atom
@@ -132,6 +136,25 @@ class WFF < Atom
       end
       return "#{a1}#{@connective.to_s}#{a2}"
     end
+  end
+
+  def to_latex
+    if @atom1.is_a? Variable
+      a1 = @atom1
+    else
+      a1 = "(#{@atom1.to_latex})"
+    end
+    if is_unary?
+      return "#{@connective.to_latex} #{a1}"
+    else
+      if @atom2.is_a? Variable
+        a2 = @atom2
+      else
+        a2 = "(#{@atom2.to_latex})"
+      end
+      return "#{a1} #{@connective.to_latex} #{a2}"
+    end
+
   end
 
   def eval(t1, t2=nil)

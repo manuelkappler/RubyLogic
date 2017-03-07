@@ -1,4 +1,4 @@
-require "./Connectives"
+require_relative "Connectives"
 
 class Equivalence
 end

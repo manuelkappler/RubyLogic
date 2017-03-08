@@ -10,8 +10,15 @@ class ProofTree
   def initialize given_implication
     law = Given.new
     @root = execute_law(law, given_implication, nil)
-    @queue = [@root]
-    @valid = nil
+    @queue = []
+    @queue << @root unless (@root.done? or @root.abort?)
+    if @root.done?
+      @valid = true
+    elsif @root.abort?
+      @valid = false
+    else
+      @valid = nil
+    end
     @last_child = @root
   end
 
@@ -34,29 +41,27 @@ class ProofTree
 
   def get_counterexample
     return false if @valid.nil? or @valid
-    puts @last_child
     atoms_prem = @last_child.implication.premises.map{|x| (x.is_a? Variable) ? "#{x.to_s} = T" : "#{x.atom1.to_s} = F"}
-    puts atoms_prem
     atoms_conc = @last_child.implication.conclusion.map{|x| (x.is_a? Variable) ? "#{x.to_s} = F" : "#{x.atom1.to_s} = T"}
-    puts atoms_conc
     atoms = atoms_prem.concat(atoms_conc).uniq
     return atoms.join(", ")
   end
 
   def get_current_step_wffs
-    return false if @queue.empty? 
+    return nil if @queue.empty? 
     return @queue[0].hash_of_premise_conclusion_wffs
   end
 
   def get_current_node
-    return false if @queue.empty? 
+    return nil if @queue.empty? 
     return @queue[0]
   end
 
   def get_applicable_laws_for_wff wff, premise = true
     laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
     if premise
-      return laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, true}
+      laws = laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, true}
+      return laws
     else
       return laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, false}
     end
@@ -66,7 +71,6 @@ class ProofTree
     laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
     matches = laws.select{|x| x.to_s == string or x.abbrev == string}
     if matches.empty?
-      puts "Can't find that law. Try again or enter 'h' to see a list of all the laws I can apply"
       return false
     else
       return matches[0].new

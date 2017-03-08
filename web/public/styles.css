@@ -1,7 +1,7 @@
 th.prooftable{
     text-align: left;
 }
-div.instruction{
+.instruction{
     visibility:  hidden;
     color: orange;
     font-weight: bold;
@@ -13,3 +13,13 @@ div.wff.selected{
     border: 5px solid orange;
 }
 
+.input-group-addon{
+    min-width: 150px;
+    text-align: left;
+}
+.done{
+    display: none;
+}
+.next_step{
+    display: none;
+}

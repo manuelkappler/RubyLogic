@@ -31,15 +31,26 @@ end
 
 post '/formula_string' do
   premise_string = params[:premises]
-  puts premise_string
   conclusion_string = params[:conclusion]
   begin
     implication = get_implication_from_strings premise_string, conclusion_string
     proof = ProofTree.new implication
     ProofHolder::SetProof( proof )
     status 200
+    content_type :json
     cur_step = proof.get_current_step_wffs
-    body ({:proof => proof.to_latex, :next_step => {:premises => cur_step[:premises].map{|x| x.to_latex}, :conclusion => cur_step[:conclusion].map{|x| x.to_latex}}}.to_json)
+    puts cur_step
+    if cur_step
+      body ({:message => "more", :proof => proof.to_latex, :next_step => {:premises => cur_step[:premises].map{|x| x.to_latex}, :conclusion => cur_step[:conclusion].map{|x| x.to_latex}}}.to_json)
+    else
+      if proof.valid?
+        puts "Valid implication on first line"
+        body ({:message => "valid", :proof => proof.to_latex}.to_json)
+      else
+        puts "Invalid implication on first line: #{proof.get_counterexample}"
+        body ({:message => "invalid", :proof => proof.to_latex, :counterexample => proof.get_counterexample}.to_json)
+      end
+    end
   rescue Exception => e
     status 400
     puts e

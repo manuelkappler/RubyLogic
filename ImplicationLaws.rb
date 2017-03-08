@@ -53,46 +53,6 @@ class ConditionalConclusion < Law
   end
 end
 
-class SubstituteEquivalents < Law
-  @available = true
-  @abbrev = "SubEq"
-
-  def self.applies? wff, premise
-    possible_equivs = find_all_equivalences wff
-    return possible_equivs[wff] if possible_equivs.length > 0
-    return false
-  end
-
-  def apply state, wff, idx 
-    possible_subs = find_all_equivalences(wff)[wff]
-    return (substitute_equivalents state, wff, (possible_subs[idx].new wff))
-  end
-
-
-  def substitute_equivalents state, wff, equiv
-    puts equiv.wff.to_s
-    if state.premises.any?{|x| x.is_equal? wff}
-      puts "Trying to replace premise"
-      state.add_premise equiv.wff
-      state.delete_premise wff
-    else
-      puts "Trying to replace conclusion"
-      state.add_conclusion equiv.wff
-      state.delete_conclusion wff
-    end
-    puts state
-    return state
-  end
-
-  def to_s
-    return "Subst. Equiv."
-  end
-
-  def to_latex
-    return "(SubEq.)"
-  end
-end
-
 class ConditionalPremise < BranchingLaw
 
   @available = true
@@ -247,6 +207,111 @@ class DisjunctionConclusion < Law
     return "(\\models, \\vee)"
   end
 
+end
+
+class BiconditionalPremise < BranchingLaw
+  @available = true
+  @abbrev = "IffPre"
+
+  def apply imp1, imp2, wff
+    return biconditional_premise imp1, imp2, wff
+  end
+
+  def self.applies? wff, premise
+    return false unless premise
+    return true if not wff.is_unary? and wff.connective.is_a? Iff
+    return false
+  end
+
+  def biconditional_premise imp1, imp2, wff
+    imp1.add_premise wff.atom1
+    imp1.add_premise wff.atom2
+    imp1.delete_premise wff
+    neg = Not.new
+    imp2.add_premise WFF.new(wff.atom1, neg)
+    imp2.add_premise WFF.new(wff.atom2, neg)
+    imp2.delete_premise wff
+    return [imp1, imp2]
+  end
+
+  def to_s
+    return "Biconditional Premise"
+  end
+  def to_latex
+    return "(\\leftrightarrow, \\models)"
+  end
+
+end
+
+class BiconditionalConclusion < BranchingLaw
+  @available = true
+  @abbrev = "IffConc"
+  def apply imp1, imp2, wff
+    return biconditional_conclusion imp1, imp2, wff
+  end
+
+  def self.applies? wff, premise
+    return false if premise
+    return true if not wff.is_unary? and wff.connective.is_a? Iff
+    return false
+  end
+
+  def biconditional_conclusion imp1, imp2, wff
+    imp1.add_premise wff.atom1
+    imp1.add_conclusion wff.atom2
+    imp1.delete_conclusion wff
+    imp2.add_premise wff.atom2
+    imp2.add_conclusion wff.atom1
+    imp2.delete_conclusion wff
+    return [imp1, imp2]
+  end
+
+  def to_s
+    return "Biconditional Conclusion"
+  end
+  def to_latex
+    return "(\\models, \\leftrightarrow)"
+  end
+end
+
+class SubstituteEquivalents < Law
+  @available = true
+  @abbrev = "SubEq"
+
+  def self.applies? wff, premise
+    possible_equivs = find_all_equivalences wff
+    return possible_equivs[wff] if possible_equivs.length > 0
+    return false
+  end
+
+  def apply state, wff, idx 
+    possible_subs = find_all_equivalences(wff)[wff]
+    return (substitute_equivalents state, wff, (possible_subs[idx].new wff))
+  end
+
+
+  def substitute_equivalents state, wff, equiv
+    puts equiv.wff.to_s
+    if state.premises.any?{|x| x.is_equal? wff}
+      puts "Trying to replace premise"
+      state.add_premise equiv.wff
+      state.delete_premise wff
+    else
+      puts "Trying to replace conclusion"
+      state.add_conclusion equiv.wff
+      state.delete_conclusion wff
+    end
+    puts state
+    return state
+  end
+
+  def to_s
+    return "Subst. Equiv."
+  end
+
+  def to_latex
+    return "(SubEq.)"
+  end
 end
 
 def is_affirmative? string

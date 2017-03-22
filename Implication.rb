@@ -20,7 +20,7 @@ class Implication
   end
 
   def elementary?
-    return true if @premises.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)} and @conclusion.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)}
+    return true if @premises.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)} and @conclusion.all?{|x| x.is_a? Contradiction or x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)}
     return false
   end
                                                         

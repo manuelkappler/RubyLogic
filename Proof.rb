@@ -42,9 +42,9 @@ class ProofTree
   def get_counterexample
     return false if @valid.nil? or @valid
     atoms_prem = @last_child.implication.premises.map{|x| (x.is_a? Variable) ? "#{x.to_s} = T" : "#{x.atom1.to_s} = F"}
-    atoms_conc = @last_child.implication.conclusion.map{|x| (x.is_a? Variable) ? "#{x.to_s} = F" : "#{x.atom1.to_s} = T"}
+    atoms_conc = @last_child.implication.conclusion.reject{|x| x.is_a? Contradiction}.map{|x| (x.is_a? Variable) ? "#{x.to_s} = F" : "#{x.atom1.to_s} = T"}
     atoms = atoms_prem.concat(atoms_conc).uniq
-    return atoms.join(", ")
+    return atoms.sort.join(", ")
   end
 
   def get_current_step_wffs
@@ -58,6 +58,7 @@ class ProofTree
   end
 
   def get_applicable_laws_for_wff wff, premise = true
+    return {} if wff.is_a? Contradiction
     laws = ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}
     if premise
       laws = laws.map.with_object({}){|law, hsh| hsh[law] = law.applies? wff, true}
@@ -117,7 +118,7 @@ class ProofTree
     queue = [@root]
     until queue.empty?
       current = queue.shift
-      rows << [current.step, "\\[ #{current.implication.to_latex} \\]", "\\[ #{current.law.to_latex} \\]", (current.done? ? "✔" : (current.abort? ? "✕" : ""))]
+      rows << [current.step, "\\[ #{current.implication.to_latex} \\]", "\\[ #{current.law.to_latex} \\]", (current.done? ? "✔" : (current.abort? ? "✘" : ""))]
       current.children.each{|x| queue << x}
     end
     return rows

@@ -104,6 +104,18 @@ class Variable < Atom
   end
 end
 
+class Contradiction < Atom
+
+  def initialize
+    @symbol = "⊥"
+  end
+
+  def to_latex
+    return "\\bot"
+  end
+
+end
+
 class WFF < Atom
 
   attr_reader(:atom1, :atom2, :connective)

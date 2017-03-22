@@ -17,12 +17,11 @@ def parse_string string, variables={}, verbose=false, novars=false
       raise ArgumentError
     end
   end
+  s.gsub!(/([A-Z]{1})[ ]?([-<>]{2,3})[ ]?([A-Z(n])/, "\\1 \\2 \\3")
   operators = {"not" => Not.new(), "or" => Or.new(), "and" => And.new(), "->" => If.new(), "<->" => Iff.new(), "(" => LeftParen.new()}
   sentinel = Sentinel.new
   output_queue = OutputQueue.new()
   operator_stack = [sentinel]
-#  wff_stack = []
-#  vars = []
   elements = s.split
   elements.each do |e|
     if ("A".."Z").include? e

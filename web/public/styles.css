@@ -6,8 +6,10 @@ th.prooftable{
     color: orange;
     font-weight: bold;
 }
-div.wff{
-    display: inline;
+.wff{
+}
+p.formula{
+    font-size: 18pt;
 }
 div.wff.selected{
     border: 5px solid orange;

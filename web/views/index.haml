@@ -20,39 +20,50 @@
 </head>
 
 
-%h1{:align => "center"} Logic Proof Tool
 #content.container-fluid
-  .row
-  .implication_input.input-group-lg.col-lg12
-    %h2.input-group-addon Enter your formula
-    .input-group
-      %span.input-group-addon#sizing-addon1 Premises
-      %input.form-control#premises{:type => "text", :placeholder => "Premises: A, A -> B, B <-> C, C or D, etc."}
-    .input-group
-      %span.input-group-addon Conclusion
-      %input.form-control#conclusion{:type => "text", :placeholder => "Conclusion: A -> not (B and C)"}
-    .input-group-btn
-      %input.btn.btn-primary.btn-block#submit{:type => "submit"}
-  .proof_table.col-lg12
-    %h2 Proof
-    %table.table-striped#prooftable{:style => "width: 100%"}
-      %thead
-        %tr
-          %th.prooftable Step
-          %th.prooftable Implication
-          %th.prooftable Law
-          %th.prooftable ✔/✘
-      %tbody
-  .next_step.col-lg12
-    %h2 Next step
-    .row
-      %h3.instruction.col-md-12#select_component    Select a component to work on
-    .row
-      #workingon.col-md-12
-    .row
-      %h3.instruction.col-md-12#select_law    Select which law to apply
-    .row
-      #availablelaws.col-md-12
-  .done.col-lg12
-    %h2 Done
-    #message
+  .page-header 
+    %h1 Logic Proof Tool
+  .panel.panel-primary#input
+    .panel-heading#input_heading{:data => {:toggle => "collapse", :target => "#collapse_input"}, :aria => {:expanded => "true", :controls => "collapse_input"}}
+      %h2 Enter your formula
+    .panel-collapse#collapse_input.collapse.in{:role => "tabpanel", :aria => {:labeledby => "input_heading"}}
+      .panel-body
+        .implication_input.input-group-lg.col-lg12
+          .input-group
+            %span.input-group-addon#sizing-addon1 Premises
+            %input.form-control#premises{:type => "text", :placeholder => "Premises: A, A -> B, B <-> C, C or D, etc."}
+          .input-group
+            %span.input-group-addon Conclusion
+            %input.form-control#conclusion{:type => "text", :placeholder => "Conclusion: A -> not (B and C)"}
+          .input-group-btn
+            %input.btn.btn-primary.btn-block#submit{:type => "submit"}
+  .panel.panel-info.hidden#proof
+    .panel-heading 
+      %h2 Proof
+    .proof_table.col-lg12
+      %table.table-condensed#prooftable{:style => "width: 100%"}
+        %thead
+          %tr
+            %th.prooftable Step
+            %th.prooftable Implication
+            %th.prooftable Law
+            %th.prooftable ✔/✘
+        %tbody
+  .panel.panel-default.hidden#next_step
+    .panel-heading
+      %h2 Next step
+    .panel-body
+      .panel.panel-default
+        .panel-heading
+          %h3.instruction#select_component    Select a component to work on
+        .panel-body
+          #workingon
+      .panel.panel-default
+        .panel-heading
+          %h3.instruction.col-md-12#select_law    Select which law to apply
+        .panel-body
+          #availablelaws
+  .panel.panel-default.hidden#done
+    .panel-heading
+      %h2 Done
+    .panel-body#done_message

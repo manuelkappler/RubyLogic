@@ -82,13 +82,15 @@ class ProofTree
     if law.is_a? Given
       return Node.new(node, law, nil, "1")
     elsif law.is_a? BranchingLaw
-      next_step = (node.step[0].to_i + 1).to_s + node.step.slice(1..-1)
+      steps_ary = node.step.split(".")
+      next_step = "#{steps_ary[0].to_i + 1}#{"." + steps_ary[1..-1].join(".") if steps_ary.length > 1}"
       new_imp1 = Implication.new node.implication.get_premises, node.implication.get_conclusion
       new_imp2 = Implication.new node.implication.get_premises, node.implication.get_conclusion
       imps = law.apply new_imp1, new_imp2, wff
       new_nodes = imps.map.with_index{|x, idx| Node.new(x, law, node, next_step + ".#{idx + 1}")}
     else
-      next_step = (node.step[0].to_i + 1).to_s + node.step.slice(1..-1)
+      steps_ary = node.step.split(".")
+      next_step = "#{steps_ary[0].to_i + 1}#{"." + steps_ary[1..-1].join(".") if steps_ary.length > 1}"
       new_imp = Implication.new node.implication.get_premises, node.implication.get_conclusion
       if resolve_ambiguity.nil?
         new_imp = law.apply new_imp, wff

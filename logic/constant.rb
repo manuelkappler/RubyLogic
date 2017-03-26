@@ -1,3 +1,0 @@
-class IndividualConstant < Constant
-
-end

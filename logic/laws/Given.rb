@@ -7,6 +7,9 @@ class Given < Law
   def to_s
     return "Given"
   end
+  def self.to_latex
+    return "(Given)"
+  end
   def to_latex
     return "(Given)"
   end

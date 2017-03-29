@@ -36,6 +36,13 @@ class Predicate
   end
 end
 
+class Equality < Predicate
+  def initialize
+    @name = "≈"
+    @arity = 2
+  end
+end
+
 class Connective
 end
 

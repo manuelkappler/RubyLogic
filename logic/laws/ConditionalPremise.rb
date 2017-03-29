@@ -14,10 +14,14 @@ class ConditionalPremise < BranchingLaw
   end
 
   def condprem imp1, imp2, wff
-    imp1.add_premise CompositeSentence.new(Not.new, wff.element1) 
-    puts imp1
-    imp1.delete_premise wff
-    puts imp1
+    if not wff.element1.is_a? AtomicSentence and wff.element1.connective.is_a? Not
+      # Deal with double negation
+      imp1.add_premise wff.element1.element1
+      imp1.delete_premise wff
+    else
+      imp1.add_premise CompositeSentence.new(Not.new, wff.element1) 
+      imp1.delete_premise wff
+    end
     imp2.add_premise wff.element2
     imp2.delete_premise wff
     return [imp1, imp2]

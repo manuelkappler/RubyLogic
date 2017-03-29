@@ -1,0 +1,3 @@
+
+class BranchingLaw < Law
+end

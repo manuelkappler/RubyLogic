@@ -8,10 +8,13 @@ class SubstituteEquivalents < Law
     return false
   end
 
-  def apply state, wff, idx 
-    possible_subs = find_equivalences(wff)
-    @equiv = possible_subs[idx].new wff
-    return (substitute_equivalents state, wff, @equiv)
+  def initialize equiv
+    @equiv = equiv
+  end
+
+  def apply state, wff
+    @equiv = @equiv.new wff
+    return substitute_equivalents state, wff, @equiv
   end
 
 
@@ -40,7 +43,5 @@ class SubstituteEquivalents < Law
 end
 
 def find_equivalences wff
-  all_equivalences = ObjectSpace.each_object(Class).select{|cl| cl < Equivalence}
-  all_equivalences = all_equivalences.select{|x| send (x.to_s.downcase + "?").to_sym, wff}
-  return all_equivalences
+  return ObjectSpace.each_object(Class).select{|cl| cl < Equivalence}.select{|x| send (x.to_s.downcase + "?").to_sym, wff}
 end

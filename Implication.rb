@@ -91,22 +91,22 @@ class Implication
   end
 
   def disjunction_premise?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? Or}
+    return true if @premises.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? Or}
     return false
   end
 
   def conditional_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? If}
+    return true if @conclusion.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? If}
     return false
   end
 
   def disjunction_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? Or}
+    return true if @conclusion.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? Or}
     return false
   end
 
   def conjunction_premise?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
+    return true if @premises.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? And}
     return false
   end
 
@@ -116,12 +116,12 @@ class Implication
   end
 
   def conjunction_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
+    return true if @conclusion.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? And}
     return false
   end
 
   def disjoining?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If and @premises.any?{|y| y.is_equal? x.element1}}
+    return true if @premises.any?{|x| not x.is_a? AtomicSentence and x.connective.is_a? If and @premises.any?{|y| y.is_equal? x.element1}}
     return false
   end
 

@@ -5,7 +5,7 @@ class Not < UnaryConnective
   def initialize
     @symbol = "¬"
     @precedence = 1
-    @latex = "\\neg"
+    @latex = "\\neg "
     @strings = ["not", "¬"]
   end
 

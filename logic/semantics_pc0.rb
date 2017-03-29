@@ -1,40 +1,36 @@
-class Model
+class Interpretation
 
-  def initialize
-    @domain = Set.new
+  def initialize predicates, constants
+    @constants = constants
 
-    @delta_hash = {}
+    @predicates = predicates
 
-    @pi_hash = {}
+    @pi_hash = @predicates.map.with_object({}){|pred, hsh| hsh[pred] = Set.new}
+    puts @pi_hash
   end
 
-  def register_predicate predicate, extension
-    @pi_hash[predicate] = extension
+  def set_predicate predicate, boolean, constants
+    begin
+      raise LogicError if constants.any?{|x| puts "Checking if #{x} is among #{@constants}: #{@constants.include? x}"; not @constants.include? x}
+      if boolean
+        raise LogicError if constants.length != predicate.arity
+        @pi_hash[predicate] << constants
+      end
+    rescue Exception => e
+      puts "LogicError in set_predicate: #{e.backtrace}"
+    end
   end
 
-  def add_to_domain element
-
-  end
-
-  def map_to_domain constant, element
-
-  end
-
-  def is_in_domain? element
-  end
 
   def pi predicate, element
     return @pi_hash[predicate].include? element
   end
 
-end
+  def to_s
+    return @pi_hash.map{|pred, ext| "π(#{pred}) = {#{ext.empty? ? "∅" : ext.map{|e| '('+ e.map{|d| 'δ(' + d.to_s + ')'}.join(',') + ')'}.join(',')}}"}
+  end
 
-class Extension
-  
-  def initialize predicate, elements
-    @predicate = predicate
-    @elements = elements
+  def to_latex
   end
 
 end
-

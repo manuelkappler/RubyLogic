@@ -23,9 +23,40 @@ class ProofTree
     step = Step.new step_number, implication, law, parent
     parent.add_child step
     @queue << step unless (step.implication.done? or step.implication.abort?)
-    @valid = false if step.implication.abort?
+    if step.implication.abort?
+      @valid = false
+      @counterexample = construct_counterexample step.implication
+    end
     @valid = true if @queue.empty? and @valid.nil?
     #puts "Added step #{step_number}. @valid is now #{@valid}"
+  end
+
+  def get_counterexample
+    return @counterexample
+  end
+
+  def construct_counterexample impl
+    puts "In construnct_counterexample for implication #{impl}"
+    return false unless impl.elementary?
+    return nil if impl.valid?
+    int = Interpretation.new ObjectSpace.each_object(Predicate).to_a, ObjectSpace.each_object(Constant).to_a
+    impl.premises.each do |prem| 
+      if prem.is_a? CompositeSentence 
+        raise LogicError unless prem.connective.is_a? Not
+        int.set_predicate prem.element1.predicate, false, prem.element1.constants
+      elsif prem.is_a? AtomicSentence
+        int.set_predicate prem.predicate, true, prem.constants
+      end
+    end
+    unless impl.conclusion.is_a? Contradiction
+      if impl.conclusion.is_a? CompositeSentence
+        raise LogicError unless impl.conclusion.connective.is_a? Not
+        int.set_predicate impl.conclusion.element1.predicate, false, impl.conclusion.element1.constants
+      else
+        int.set_predicate impl.conclusion.predicate, true, impl.conclusion.constants
+      end
+    end
+    return int
   end
 
   def get_current_step
@@ -55,6 +86,9 @@ class ProofTree
     return ary
   end
 
+  def to_latex
+    traverse_node(@root).map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.implication.valid? ? "✔" : (step.implication.abort? ? "✘" : ""))]}
+  end
 
   class Step 
     attr_reader :step_number, :implication, :law, :parent, :children
@@ -81,6 +115,10 @@ class ProofTree
 
     def to_s
       return "#{@step_number}: #{@implication.to_s} (#{@law.to_s}) #{"Checkmark" if @implication.valid?}"
+    end
+
+    def to_latex
+      return "#{@step_number}: #{@implication.to_latex} (#{@law.to_latex}) #{"Check" if @implication.valid?}"
     end
 
   end

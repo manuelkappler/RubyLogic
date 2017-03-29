@@ -3,7 +3,6 @@ class ConditionalConclusion < Law
   @abbrev = "IfCon"
 
   def apply state, wff
-    raise LogicError unless state.conditional_conclusion?
     return conditional_conclusion state, wff
   end
 

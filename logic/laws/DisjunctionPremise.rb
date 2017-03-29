@@ -3,7 +3,6 @@ class DisjunctionPremise < BranchingLaw
   @abbrev = "OrPre"
 
   def apply imp1, imp2, wff
-    raise LogicError unless imp1.disjunction_premise?
     return disjunction_premise imp1, imp2, wff
   end
 

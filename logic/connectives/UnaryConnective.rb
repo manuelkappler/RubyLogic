@@ -1,0 +1,2 @@
+class UnaryConnective < Connective
+end

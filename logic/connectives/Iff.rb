@@ -5,7 +5,7 @@ class Iff < BinaryConnective
   def initialize
     @precedence = 5
     @symbol = "↔"
-    @latex = "\\leftrightarrow"
+    @latex = "\\leftrightarrow "
     @strings = ["iff", "⇔", "↔", "<->"]
   end
 

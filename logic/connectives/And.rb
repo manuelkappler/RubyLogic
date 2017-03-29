@@ -6,7 +6,7 @@ class And < BinaryConnective
     @precedence = 2
     @symbol = "∧"
     @strings = ["and", "∧"]
-    @latex = "\\wedge"
+    @latex = "\\wedge "
   end
 
 end

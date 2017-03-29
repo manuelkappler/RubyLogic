@@ -5,7 +5,7 @@ class If < BinaryConnective
   def initialize
     @precedence = 4
     @symbol = "→"
-    @latex = "\\rightarrow"
+    @latex = "\\rightarrow "
     @strings = ["if", "->", "→"]
   end
 

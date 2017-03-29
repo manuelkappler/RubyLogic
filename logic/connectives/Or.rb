@@ -4,7 +4,7 @@ class Or < BinaryConnective
 
   def initialize
     @symbol = "∨"
-    @latex = "\\vee"
+    @latex = "\\vee "
     @strings = ["or", "∨"]
     @precedence = 3
   end

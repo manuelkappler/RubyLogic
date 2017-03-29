@@ -32,18 +32,56 @@ require_relative "../logic/laws/BiconditionalPremise"
 require_relative "../logic/laws/BiconditionalConclusion"
 require_relative "../logic/laws/ContradictoryConclusion"
 require_relative "../logic/laws/SubstituteEquivalents"
+require_relative "../logic/laws/EqualitySubstitution"
 
 class Proof
 
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
+    puts premise_string
     constants = (premise_string + conclusion_string).scan(/[\(,]\s?([a-z]{1})/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
-    predicates = (premise_string + conclusion_string).scan(/([A-Z])\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| hsh[x[0]] = Predicate.new x[0], x[1].split(",").length}
+    puts constants
+    predicates = (premise_string + conclusion_string).scan(/([A-Z]|≈|eq)\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| puts "Creating predicate for #{x}"; ("≈" == x[0] or "eq" == x[0]) ? hsh[x[0]] = Equality.new : hsh[x[0]] = Predicate.new(x[0], x[1].split(",").length)}
+    puts predicates
     premise_ary = premise_string.split(/(?<=[) ]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
     conclusion = parse_string_pc0 conclusion_string, constants, predicates
     @proof_tree = ProofTree.new [premise_ary, conclusion] 
   end
+
+  def valid?
+    return @proof_tree.valid
+  end
+
+  def get_counterexample
+    return @proof_tree.get_counterexample
+  end
+
+  def next_step!
+    @current_step = @proof_tree.work_on_step!
+    @all_steps = @proof_tree.get_all_steps
+    return [@all_steps, @current_step]
+  end
+
+  def apply_step! next_sentence, next_law
+    cur_step = @current_step
+    step_number_ary = cur_step.step_number.split(".")
+    next_major_step_number = step_number_ary[0].to_i + 1
+
+    if next_law.is_a? BranchingLaw
+      branch1 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
+      branch2 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
+      new_implications = next_law.apply branch1, branch2, next_sentence
+      #puts new_implications.map(&:to_s)
+      new_implications.each_with_index{|imp, idx| @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}.#{idx + 1}", imp, next_law, cur_step}
+
+    else
+      new_implication = Implication.new cur_step.get_premises, cur_step.get_conclusion
+      new_implication = next_law.apply new_implication, next_sentence
+      @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}", new_implication, next_law, cur_step
+    end
+  end
+
 
   def proof
     until @proof_tree.done?
@@ -67,6 +105,13 @@ class Proof
         @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}", new_implication, next_law, cur_step
       end
 
+    end
+
+    def to_latex
+      puts "Called to_latex"
+      x = @proof_tree.to_latex
+      puts x
+      return x
     end
     puts "Success. You proved the implication" if @proof_tree.valid
   end

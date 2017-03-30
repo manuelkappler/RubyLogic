@@ -3,7 +3,6 @@ class ConjunctionConclusion < BranchingLaw
   @abbrev = "AndCon"
 
   def apply imp1, imp2, wff
-    raise LogicError unless imp1.conjunction_conclusion?
     return conjunction_conclusion imp1, imp2, wff
   end
 
@@ -14,10 +13,8 @@ class ConjunctionConclusion < BranchingLaw
   end
 
   def conjunction_conclusion imp1, imp2, wff
-    imp1.add_conclusion wff.element1.
-    imp1.delete_conclusion wff 
+    imp1.add_conclusion wff.element1
     imp2.add_conclusion wff.element2
-    imp2.delete_conclusion wff
     return [imp1, imp2]
   end
 

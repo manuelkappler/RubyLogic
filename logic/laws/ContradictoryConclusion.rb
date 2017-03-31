@@ -8,7 +8,11 @@ class ContradictoryConclusion < Law
   end
 
   def apply state, wff
-    state.add_premise CompositeSentence.new(Not.new, wff)
+    if wff.is_a? CompositeSentence and wff.connective.is_a? Not
+      state.add_premise wff.element1
+    else
+      state.add_premise CompositeSentence.new(Not.new, wff)
+    end
     state.delete_conclusion wff
     state.add_conclusion Contradiction.new
     return state

@@ -68,8 +68,6 @@ class Implication
         @premises << wff
       end
       #puts @premises
-    else
-      puts "Already present: #{wff.to_s}"
     end
   end
 
@@ -104,7 +102,7 @@ class Implication
   end
 
   def eq1?
-    # Implement
+    return true if @premises.any? {|x| x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.class == Equality and (x.element1.element1 == x.element1.element2)}
     return false
   end
 end

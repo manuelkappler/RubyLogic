@@ -34,12 +34,9 @@ class Predicate
   def to_s
     return @name
   end
-end
 
-class Equality < Predicate
-  def initialize
-    @name = "≈"
-    @arity = 2
+  def to_latex
+    return @name
   end
 end
 
@@ -78,18 +75,18 @@ class AtomicSentence < Sentence
     @predicate = predicate
     if constants.length != predicate.arity
       puts "Constants are of length #{constants.length} but predicate has arity #{predicate.arity}"
-      raise LogicError
     else
       @constants = constants
     end
   end
 
   def to_s
-    return "#{@predicate}(#{@constants.map(&:to_s).join(", ")})"
+    return "#{@predicate.to_s}(#{@constants.map(&:to_s).join(", ")})"
   end
 
   def to_latex
-    return "#{@predicate}(#{@constants.map(&:to_s).join(",")})"
+    puts "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
+    return "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
   end
 
 end
@@ -156,7 +153,35 @@ class CompositeSentence < Sentence
     end
   end
 
+end
 
+class Equality < AtomicSentence
+
+  attr_reader :element1, :element2, :constants
+
+  def initialize left, right
+    @element1 = left
+    @element2 = right
+    @constants = [@element1, @element2]
+    @pred = Predicate.new("≈", 2)
+    @used = false
+  end
+
+  def used?
+    return @used
+  end
+
+  def used!
+    @used = true
+  end
+
+  def to_latex
+    return "#{@element1}\\approx #{@element2}"
+  end
+
+  def to_s
+    return "#{@element1}\\approx #{@element2}"
+  end
 end
 
 # Load all connectives

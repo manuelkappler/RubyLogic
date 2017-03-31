@@ -1,6 +1,10 @@
-
 def parse_string_pc0 input_string, constants_hsh, predicates_hsh
   puts input_string
+  return Contradiction.new if input_string == "⊥" or input_string == "Contradiction"
+  eq_match = /(?<a>[a-z])\s?(≈|eq)\s?(?<b>[a-z])/.match(input_string)
+  unless eq_match.nil?
+    return Equality.new(constants_hsh[eq_match[:a]], constants_hsh[eq_match[:b]])
+  end
   #puts constants_hsh
   #puts predicates_hsh
   neg, disj, conj, cond, bicond, paren, eq = [Not.new, Or.new, And.new, If.new, Iff.new, LeftParenthesis.new]
@@ -8,9 +12,9 @@ def parse_string_pc0 input_string, constants_hsh, predicates_hsh
   premise_queue = OutputQueue.new
   operator_stack = [Sentinel.new]
   input_string.split(/\s*(and|or|->|<->|∧|∨|→|↔|¬|not|(?<![a-z])\)|\((?=\s?[A-Z]))\s*/).each do |element|
-    print "Current operator stack: #{operator_stack.map(&:to_s)}\n"
-    print "Current premise queue: #{premise_queue.map(&:to_s)}\n"
-    print "Working on: #{element}\n"
+    #print "Current operator stack: #{operator_stack.map(&:to_s)}\n"
+    #print "Current premise queue: #{premise_queue.map(&:to_s)}\n"
+    #print "Working on: #{element}\n"
     if element == ")"
       until operator_stack[-1].is_a? LeftParenthesis or operator_stack[-1].is_a? Sentinel
         premise_queue << operator_stack.pop
@@ -30,7 +34,7 @@ def parse_string_pc0 input_string, constants_hsh, predicates_hsh
     else
       pred = predicates_hsh[element[0]]
       vars = element.scan(/.*?([a-z]{1}).*?/).flatten.map{|x| constants_hsh[x]}
-      puts "Predicate: #{pred.to_s}(#{vars.map(&:to_s).join(',')})"
+      #puts "Predicate: #{pred.to_s}(#{vars.map(&:to_s).join(',')})"
       premise_queue << AtomicSentence.new(pred, vars)
     end
 #    print "Done.\n Current premise queue: #{premise_queue.map(&:to_s)}\n Current operator stack: #{operator_stack.map(&:to_s)}\n\n\n"
@@ -50,7 +54,7 @@ end
 class OutputQueue < Array
 
   def get_wff
-    puts self.map(&:to_s)
+    #puts self.map(&:to_s)
     if self[-1].is_a? BinaryConnective
       op = self.pop
       a2 = self.get_wff
@@ -60,11 +64,6 @@ class OutputQueue < Array
     elsif self[-1].is_a? UnaryConnective and not self[-1].is_a? EqualityDummy
       op = self.pop
       return CompositeSentence.new(op, self.get_wff)
-    elsif self[-1].is_a? EqualityDummy
-      op = self.pop
-      a2 = self.pop
-      a1 = self.pop
-      return Equality.new a1, a2
     else
       return self.pop
     end

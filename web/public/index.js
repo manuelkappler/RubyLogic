@@ -96,7 +96,8 @@ function respond_to_data(data){
             }
             else{
                 $('#done').addClass("panel-danger")
-                $('#done_message').html('<p class="lead panel-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> Counterexample:  ' + data.counterexample + '</p>')
+                $('#done_message').html('<p class="lead panel-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> </p><p class="lead panel-body"><span id="counterexample"> Counterexample:</span><span id="ce_formula">' + data.counterexample + '</span></p>')
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#ce_formula').get()]);
             }
         }
         $('#select_law').css("visibility", "hidden")

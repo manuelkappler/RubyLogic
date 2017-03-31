@@ -39,26 +39,33 @@ class Proof
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
-    puts premise_string
-    constants = (premise_string + conclusion_string).scan(/[\(,]\s?([a-z]{1})/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
-    puts constants
-    predicates = (premise_string + conclusion_string).scan(/([A-Z]|≈|eq)\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| puts "Creating predicate for #{x}"; ("≈" == x[0] or "eq" == x[0]) ? hsh[x[0]] = Equality.new : hsh[x[0]] = Predicate.new(x[0], x[1].split(",").length)}
-    puts predicates
-    premise_ary = premise_string.split(/(?<=[) ]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
+    #puts premise_string
+    constants = (premise_string + conclusion_string).scan(/[a-z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
+    #puts constants
+    predicates = (premise_string + conclusion_string).scan(/([A-Z])\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| hsh[x[0]] = Predicate.new(x[0], x[1].split(",").length)}
+    #puts predicates
+    premise_ary = premise_string.split(/(?<=[) ]),|(?<=[≈]\s[a-z]),|(?<=[eq]\s[a-z]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
     conclusion = parse_string_pc0 conclusion_string, constants, predicates
     @proof_tree = ProofTree.new [premise_ary, conclusion] 
   end
 
   def valid?
-    return @proof_tree.valid
+    done = @proof_tree.valid
+    puts done
+    x= (done == -1) ? false : (done == 1) ? true : nil
+    puts x
+    return x
   end
 
   def get_counterexample
-    return @proof_tree.get_counterexample
+    return @proof_tree.counterexample
   end
 
   def next_step!
+    puts "Getting next step"
+    puts "=================\n\n"
     @current_step = @proof_tree.work_on_step!
+    puts "Working on: #{@current_step}"
     @all_steps = @proof_tree.get_all_steps
     return [@all_steps, @current_step]
   end
@@ -69,6 +76,8 @@ class Proof
     next_major_step_number = step_number_ary[0].to_i + 1
 
     if next_law.is_a? BranchingLaw
+      puts "We've got a BranchingLaw.. Creating two new implications"
+      puts "========================================================"
       branch1 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
       branch2 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
       new_implications = next_law.apply branch1, branch2, next_sentence
@@ -80,6 +89,7 @@ class Proof
       new_implication = next_law.apply new_implication, next_sentence
       @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}", new_implication, next_law, cur_step
     end
+    @proof_tree.check_all_branches
   end
 
 

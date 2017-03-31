@@ -33,20 +33,22 @@ class LHEqualitySubstitution < Law
 
   def substitute wff, term_from, term_to
     if wff.is_a? AtomicSentence
-      puts "Reached an AtomicSentence: #{wff}. Substituting #{term_from} with #{term_to}"
-      new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x == term_from ? term_to : x})
-      puts "Outcome: #{new_sentence.to_s}"
-      return new_sentence
+      if wff.class == Equality
+        if wff.element1 == term_from
+          return Equality.new(term_to, wff.element2)
+        else
+          return Equality.new(wff.element1, term_to)
+        end
+      else
+        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x === term_from ? term_to : x})
+        return new_sentence
+      end
     else
       if wff.connective.is_a? Not
-        puts "This element is a negation. Replacing #{term_from} with #{term_to} in #{wff.element1}"
         new_sentence = CompositeSentence.new(Not.new, substitute(wff.element1, term_from, term_to))
-        puts "Outcome: #{new_sentence.to_s}"
         return new_sentence
       else
-        puts "This element is a CompositeSentence. Replacing #{term_from} with #{term_to} in #{wff.element1} and in #{wff.element2}"
         new_sentence = CompositeSentence.new(wff.connective, substitute(wff.element1, term_from, term_to), substitute(wff.element2, term_from, term_to))
-        puts "Outcome: #{new_sentence.to_s}"
         return new_sentence
       end
     end
@@ -59,8 +61,6 @@ class LHEqualitySubstitution < Law
   def to_s
     return "ESL #{@wff.element1} ⇒  #{@wff.element2}"
   end
-
-
 end
 
 class RHEqualitySubstitution < Law
@@ -98,20 +98,22 @@ class RHEqualitySubstitution < Law
 
   def substitute wff, term_from, term_to
     if wff.is_a? AtomicSentence
-      puts "Reached an AtomicSentence: #{wff}. Substituting #{term_from} with #{term_to}"
-      new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x == term_from ? term_to : x})
-      puts "Outcome: #{new_sentence.to_s}"
-      return new_sentence
+      if wff.class == Equality
+        if wff.element1 == term_from
+          return Equality.new(term_to, wff.element2)
+        else
+          return Equality.new(wff.element1, term_to)
+        end
+      else
+        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x === term_from ? term_to : x})
+        return new_sentence
+      end
     else
       if wff.connective.is_a? Not
-        puts "This element is a negation. Replacing #{term_from} with #{term_to} in #{wff.element1}"
         new_sentence = CompositeSentence.new(Not.new, substitute(wff.element1, term_from, term_to))
-        puts "Outcome: #{new_sentence.to_s}"
         return new_sentence
       else
-        puts "This element is a CompositeSentence. Replacing #{term_from} with #{term_to} in #{wff.element1} and in #{wff.element2}"
         new_sentence = CompositeSentence.new(wff.connective, substitute(wff.element1, term_from, term_to), substitute(wff.element2, term_from, term_to))
-        puts "Outcome: #{new_sentence.to_s}"
         return new_sentence
       end
     end

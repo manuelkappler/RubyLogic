@@ -64,13 +64,13 @@ post '/formula_string' do
   conclusion_string = params[:conclusion]
   begin
     proof = Proof.new premise_string, conclusion_string
-    puts proof.inspect
+    #puts proof.inspect
     ProofHolder::SetProof( proof )
     status 200
     content_type :json
     all_steps, cur_step = proof.next_step!
     ProofHolder.SetCurStep(cur_step)
-    latex = all_steps.map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.implication.valid? ? "✔" : (step.implication.abort? ? "✘" : ""))]}
+    latex = all_steps.map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.valid? ? "✔" : (step.abort? ? "✘" : ""))]}
     if cur_step
       body ({:message => "more", :proof => latex, :next_step => {:premises => cur_step.implication.premises.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
     else
@@ -118,7 +118,6 @@ get '/get_laws/:element' do
     idx = match[:idx]
   end
   wff = (loc == "premise") ? cur_step.implication.premises[idx.to_i] : cur_step.implication.conclusion
-  puts "Chose element #{wff} (#{wff.inspect}) (is equality? #{wff.predicate.is_a? Equality}) to go on with"
   ProofHolder.SetWFF(wff)
   laws = wff.get_applicable_laws (loc == "premise")
   if laws.include? SubstituteEquivalents
@@ -129,7 +128,7 @@ get '/get_laws/:element' do
   puts laws.inspect
   status 200
   content_type :json
-  body laws.to_json
+  body laws.map{|x| x.to_s}.to_json
 end
 
 post '/apply_law' do
@@ -146,7 +145,7 @@ post '/apply_law' do
   proof = ProofHolder.GetProof()
   proof.apply_step! ProofHolder.WFF(), law
   all_steps, cur_step = proof.next_step!
-  latex = all_steps.map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.implication.valid? ? "✔" : (step.implication.abort? ? "✘" : ""))]}
+  latex = all_steps.map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.valid? ? "✔" : (step.abort? ? "✘" : ""))]}
   ProofHolder.SetCurStep(cur_step)
   status 200
   content_type :json
@@ -158,7 +157,7 @@ post '/apply_law' do
       body ({:message => "valid", :proof => latex}.to_json)
     else
       puts "Invalid implication: #{proof.get_counterexample.to_s}"
-      body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_s}.to_json)
+      body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_latex}.to_json)
     end
   end
 end

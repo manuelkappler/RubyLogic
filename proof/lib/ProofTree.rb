@@ -8,32 +8,22 @@ class ProofTree
     if @root.valid? 
       @valid = 1
     elsif @root.abort?
-      puts "#{@root} is aborted"
       @counterexample = construct_counterexample @root.implication
       @valid = -1
     else
       @valid = 0
     end
     @queue = (@root.valid? or @root.abort?) ? [] : [@root]
-    #puts "Queue initialized. Currently: #{@queue}"
   end
 
   def check_all_branches
-    puts "Checking all branches for aborts or all branches done..."
-    puts "========================================================"
     ary = traverse_tree @root
-    puts "total number of steps: #{ary.length}"
-    puts "Steps that have ABORT flag: #{ary.select{|x| x.abort?}.length}"
-    puts "Steps that have VALID flag: #{ary.select{|x| x.valid?}.length}"
     if ary.any?{|x| x.abort?} 
       @counterexample = construct_counterexample ary.select{|x| x.abort?}[0].implication
-      puts "Setting @valid to -1"
       @valid = -1 
     elsif ary.select{|x| x.children.empty?}.any?{|x| not x.valid?}
-      puts "Setting @valid to 0"
       @valid = 0
     else
-      puts "Setting @valid to 1"
       @valid = 1
     end
   end
@@ -41,18 +31,14 @@ class ProofTree
   def add_step step_number, implication, law, parent
     step = Step.new step_number, implication, law, parent
     parent.add_child step
-    #puts "Adding #{step} to #{@queue}"; 
     @queue << step unless (step.valid? or step.abort?)
   end
 
   def construct_counterexample impl
-    puts "In construct_counterexample for implication #{impl.inspect}"
     return false unless impl.elementary?
     return nil if impl.valid?
     predicates = (impl.premises + [impl.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
-    puts predicates
     constants = (impl.premises + [impl.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
-    puts constants
     int = Interpretation.new predicates, constants
     impl.premises.each do |prem|
       if prem.is_a? CompositeSentence 
@@ -83,9 +69,7 @@ class ProofTree
   end
 
   def work_on_step!
-    #puts "in work_on_step! asking for next queue element, which is #{@queue[0]}"
     return @queue.shift unless @valid != 0
-    #puts "returning #{el}"
   end
 
   def get_all_steps

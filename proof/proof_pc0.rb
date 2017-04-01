@@ -39,11 +39,8 @@ class Proof
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
-    #puts premise_string
     constants = (premise_string + conclusion_string).scan(/[a-z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
-    #puts constants
     predicates = (premise_string + conclusion_string).scan(/([A-Z])\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| hsh[x[0]] = Predicate.new(x[0], x[1].split(",").length)}
-    #puts predicates
     premise_ary = premise_string.split(/(?<=[) ]),|(?<=[≈]\s[a-z]),|(?<=[eq]\s[a-z]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
     conclusion = parse_string_pc0 conclusion_string, constants, predicates
     @proof_tree = ProofTree.new [premise_ary, conclusion] 
@@ -51,9 +48,7 @@ class Proof
 
   def valid?
     done = @proof_tree.valid
-    puts done
     x= (done == -1) ? false : (done == 1) ? true : nil
-    puts x
     return x
   end
 
@@ -62,10 +57,7 @@ class Proof
   end
 
   def next_step!
-    puts "Getting next step"
-    puts "=================\n\n"
     @current_step = @proof_tree.work_on_step!
-    puts "Working on: #{@current_step}"
     @all_steps = @proof_tree.get_all_steps
     return [@all_steps, @current_step]
   end
@@ -76,12 +68,9 @@ class Proof
     next_major_step_number = step_number_ary[0].to_i + 1
 
     if next_law.is_a? BranchingLaw
-      puts "We've got a BranchingLaw.. Creating two new implications"
-      puts "========================================================"
       branch1 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
       branch2 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
       new_implications = next_law.apply branch1, branch2, next_sentence
-      #puts new_implications.map(&:to_s)
       new_implications.each_with_index{|imp, idx| @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}.#{idx + 1}", imp, next_law, cur_step}
 
     else
@@ -96,7 +85,6 @@ class Proof
   def proof
     until @proof_tree.done?
       cur_step = @proof_tree.work_on_step!
-      #puts "Proving: Current step is #{cur_step}"
       next_sentence, next_law = yield @proof_tree.get_all_steps, cur_step
       next_law = next_law.new
       step_number_ary = cur_step.step_number.split(".")
@@ -106,7 +94,6 @@ class Proof
         branch1 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
         branch2 = Implication.new cur_step.implication.get_premises, cur_step.implication.get_conclusion
         new_implications = next_law.apply branch1, branch2, next_sentence
-        #puts new_implications.map(&:to_s)
         new_implications.each_with_index{|imp, idx| @proof_tree.add_step "#{next_major_step_number}#{("."+step_number_ary[1..-1].join(".") if step_number_ary.length > 1)}.#{idx + 1}", imp, next_law, cur_step}
 
       else
@@ -118,12 +105,9 @@ class Proof
     end
 
     def to_latex
-      puts "Called to_latex"
       x = @proof_tree.to_latex
-      puts x
       return x
     end
-    puts "Success. You proved the implication" if @proof_tree.valid
   end
 
 end

@@ -40,7 +40,7 @@ class LHEqualitySubstitution < Law
           return Equality.new(wff.element1, term_to)
         end
       else
-        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x === term_from ? term_to : x})
+        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x == term_from ? term_to : x})
         return new_sentence
       end
     else
@@ -105,7 +105,7 @@ class RHEqualitySubstitution < Law
           return Equality.new(wff.element1, term_to)
         end
       else
-        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x === term_from ? term_to : x})
+        new_sentence = AtomicSentence.new(wff.predicate, wff.constants.map{|x| x == term_from ? term_to : x})
         return new_sentence
       end
     else

@@ -14,6 +14,10 @@ class Constant
     return @name
   end
 
+  def === other_atom
+    return true if self.to_s == other_atom.to_s
+  end
+
 end
 
 class Predicate
@@ -48,7 +52,7 @@ class Sentence
     if self.class != other_atom.class
       return false
     elsif self.is_a? AtomicSentence or other_atom.is_a? AtomicSentence
-      return (self.predicate == other_atom.predicate and self.constants.map.with_index{|x, idx| true if other_atom.constants[idx] == x}.all?)
+      return (self.predicate == other_atom.predicate and self.constants.map.with_index{|x, idx| true if other_atom.constants[idx] === x}.all?)
     elsif (self.is_a? CompositeSentence) != (other_atom.is_a? CompositeSentence)
       return false
     elsif (self.is_a? CompositeSentence) and (other_atom.is_a? CompositeSentence)

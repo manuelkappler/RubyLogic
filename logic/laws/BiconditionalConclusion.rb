@@ -14,10 +14,8 @@ class BiconditionalConclusion < BranchingLaw
   def biconditional_conclusion imp1, imp2, wff
     imp1.add_premise wff.element1
     imp1.add_conclusion wff.element2
-    imp1.delete_conclusion wff
     imp2.add_premise wff.element2
     imp2.add_conclusion wff.element1
-    imp2.delete_conclusion wff
     return [imp1, imp2]
   end
 

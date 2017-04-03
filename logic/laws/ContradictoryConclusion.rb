@@ -13,7 +13,6 @@ class ContradictoryConclusion < Law
     else
       state.add_premise CompositeSentence.new(Not.new, wff)
     end
-    state.delete_conclusion wff
     state.add_conclusion Contradiction.new
     return state
   end

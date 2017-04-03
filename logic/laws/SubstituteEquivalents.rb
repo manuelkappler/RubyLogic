@@ -26,7 +26,6 @@ class SubstituteEquivalents < Law
     else
       # puts "Trying to replace conclusion"
       state.add_conclusion equiv.wff
-      state.delete_conclusion wff
     end
     puts state
     return state

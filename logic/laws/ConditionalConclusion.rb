@@ -15,7 +15,6 @@ class ConditionalConclusion < Law
   def conditional_conclusion state, wff
     state.add_premise wff.element1
     state.add_conclusion wff.element2
-    state.delete_conclusion wff
     return state
   end
 

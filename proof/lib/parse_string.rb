@@ -1,5 +1,5 @@
 def parse_string_pc0 input_string, constants_hsh, predicates_hsh
-  puts input_string
+  #puts input_string
   return Contradiction.new if input_string == "⊥" or input_string == "Contradiction"
   # If the whole string is merely an equality, take care of it now
   eq_match = /\A(?<a>[a-z])\s?(≈|eq)\s?(?<b>[a-z])\z/.match(input_string)

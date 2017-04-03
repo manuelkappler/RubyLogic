@@ -8,21 +8,23 @@ RubyLogic aims to do a slate of things helpful for students and teachers of logi
 
 ## Current State
 
-The repo at the moment focuses on deduction proofs. Starting the program (`ruby deriver.rb`) will prompt for input of a comma-separated set of premises and of conclusions; it then asks which implication law to use, applies it, and checks for validity.
+The program relies on Sinatra to open up a web interface that allows for proving implication claims in the framework $PC_0$.
+
 
 ## TODO
 
 Listed in decreasing order of importance
 
-- [ ] Allow for printing of proofs as TeX file
-- [ ] Allow for automated proofs
+- [ ] Re-enable the sentential logic component of the program on a joint web interface
+    - [ ] Implement syntax_sentential, semantics_sentential, parse_string_sentential, and proof_sentential
+    - [ ] Move logic-specific web code to a different app file and let the main app only control routes and basic interface
+    - [ ] Cleanly separate all syntax-specific code from ProofTree helper class
+- [ ] Merge `markdowntruthtable` into the project and enable in joint web interface
+- [x] Allow for printing of proofs as TeX file (proofs can now be displayed as a raw LaTeX-Tabular environment (A counterexample is given below if necessary)
 - [x] Implement checking for premises including conclusion
-- [ ] Implement simplification via equivalence laws
-    - Mostly done. Missing:
-        - [ ] Reverse laws (esp. Reverse DeMorgan)
-- [ ] Merge `markdowntruthtable` into the project and create an overarching menu
+- [x] Implement simplification via equivalence laws
+- [x] Rewrite codebase from sentential logic to predicate logic
 - Fully implement all implication laws
-    - This involves implementing branching in the proof, which is what I'm currently working on
     - Full list:
         - [x] Conditional conclusion law
         - [x] Conjunction premise law
@@ -32,6 +34,7 @@ Listed in decreasing order of importance
         - [x] Monotonicity
         - [x] Disjunction premise law 
         - [x] Conjunction conclusion law 
-        - [ ] Conjunction premise law
-        - [ ] Biconditional laws (premise/conclusion)
-        - [ ] Contradictory conclusion law (required for proofs by contradiction)
+        - [x] Conjunction premise law
+        - [x] Biconditional laws (premise/conclusion)
+        - [x] Contradictory conclusion law (required for proofs by contradiction)
+- [ ] Allow for automated proofs (this is not really relevant, although it would be cool)

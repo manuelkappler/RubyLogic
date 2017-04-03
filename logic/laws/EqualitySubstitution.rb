@@ -11,8 +11,10 @@ class LHEqualitySubstitution < Law
   end
 
   def apply state, wff
-    @wff = wff
+    @wff = Equality.new(wff.element1, wff.element2)
     @wff.used!
+    state.delete_premise wff
+    state.add_premise @wff
     return substitute_all state, wff
   end
 
@@ -76,8 +78,10 @@ class RHEqualitySubstitution < Law
   end
 
   def apply state, wff
-    @wff = wff
+    @wff = Equality.new(wff.element1, wff.element2)
     @wff.used!
+    state.delete_premise wff
+    state.add_premise @wff
     return substitute_all state, wff
   end
 

@@ -4,7 +4,6 @@ class DisjunctionConclusion < Law
   @abbrev = "OrCon"
 
   def apply state, wff
-    raise LogicError unless state.disjunction_conclusion?
     return disjunction_conclusion state, wff
   end
 
@@ -16,10 +15,9 @@ class DisjunctionConclusion < Law
 
   def disjunction_conclusion state, wff
 
-    new_wff = CompositeSentence.new(wff.element1, Not.new)
+    new_wff = CompositeSentence.new(Not.new, wff.element1)
     state.add_premise new_wff
     state.add_conclusion wff.element2
-    state.delete_conclusion wff
     return state
   end
   def to_s

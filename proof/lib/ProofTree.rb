@@ -4,6 +4,7 @@ class ProofTree
 
   def initialize given_claim
     # given_claim is array of: an array of premises and a (single) conclusion [[pre1, pre2, pre3], conclusion]
+    @counterexample = nil
     @root = Step.new("1", Implication.new(given_claim[0], given_claim[1]), Given, nil)
     if @root.valid? 
       @valid = 1
@@ -90,7 +91,14 @@ class ProofTree
   end
 
   def to_latex
-    traverse_node(@root).map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.valid? ? "✔" : (step.abort? ? "✘" : ""))]}
+    string = "\\begin{tabular}{l r c l r r}\n"
+    string += traverse_tree(@root).map{|step| "#{step.step_number} & $#{step.implication.premises.sort.map(&:to_latex).join(',')}$ & $\\models$ & $#{step.implication.conclusion.to_latex}$ & $#{step.law.to_latex}$ & #{(step.valid? ? '$\\checkmark$' : (step.abort? ? '$\\times$' : ''))}"}.join("\\\\\n")
+    string += "\n\\end{tabular}"
+    unless @counterexample.nil?
+      string += "\\\\ \\\\ \\textbf{Counterexample}:
+      #{@counterexample.to_latex}"
+    end
+    return string
   end
 
   class Step 

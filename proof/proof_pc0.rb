@@ -104,10 +104,10 @@ class Proof
 
     end
 
-    def to_latex
-      x = @proof_tree.to_latex
-      return x
-    end
   end
 
+  def to_latex
+    x = @proof_tree.to_latex
+    return x
+  end
 end

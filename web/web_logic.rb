@@ -59,6 +59,13 @@ get '/' do
   haml :index
 end
 
+get '/to_latex' do
+  proof = ProofHolder::GetProof().to_latex
+  status 200
+  content_type :text
+  proof
+end
+
 post '/formula_string' do
   premise_string = params[:premises]
   conclusion_string = params[:conclusion]
@@ -72,13 +79,13 @@ post '/formula_string' do
     ProofHolder.SetCurStep(cur_step)
     latex = all_steps.map{|step| [step.step_number, "\\[ #{step.implication.to_latex} \\]", "\\[ #{step.law.to_latex} \\]", (step.valid? ? "✔" : (step.abort? ? "✘" : ""))]}
     if cur_step
-      body ({:message => "more", :proof => latex, :next_step => {:premises => cur_step.implication.premises.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
+      body ({:message => "more", :proof => latex, :next_step => {:premises => cur_step.implication.premises.sort.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
     else
       if proof.valid?
-        puts "Valid implication"
+        #puts "Valid implication"
         body ({:message => "valid", :proof => latex}.to_json)
       else
-        puts "Invalid implication: #{proof.get_counterexample.to_s}"
+        #puts "Invalid implication: #{proof.get_counterexample.to_s}"
         body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_s}.to_json)
       end
     end
@@ -89,35 +96,18 @@ post '/formula_string' do
   end
 end
 
-#  proof.proof do |all_steps, cur_step|
-#    puts cur_step.to_s
-#    wff = nil
-#    law = nil
-#    if cur_step
-#      body ({:message => "more", :proof => all_steps.map{|step| step.to_latex}, :next_step => {:premises => cur_step.implication.premises.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
-#    else
-#      if proof.valid?
-#        puts "Valid implication"
-#        body ({:message => "valid", :proof => proof.to_latex}.to_json)
-#      else
-#        puts "Invalid implication: #{proof.get_counterexample}"
-#        body ({:message => "invalid", :proof => proof.to_latex, :counterexample => proof.get_counterexample}.to_json)
-#      end
-#    end
-#  end
-#
 get '/get_laws/:element' do
   cur_step = ProofHolder.CurStep()
-  puts params[:element]
+  #puts params[:element]
   if params[:element] == "conclusion"
     loc = "Conclusion"
   else
     match = /(?<loc>[a-z]*)(?<idx>\d{1,2})/.match(params[:element])
-    puts match.inspect
+    #puts match.inspect
     loc = match[:loc]
     idx = match[:idx]
   end
-  wff = (loc == "premise") ? cur_step.implication.premises[idx.to_i] : cur_step.implication.conclusion
+  wff = (loc == "premise") ? cur_step.implication.premises.sort[idx.to_i] : cur_step.implication.conclusion
   ProofHolder.SetWFF(wff)
   laws = wff.get_applicable_laws (loc == "premise")
   if laws.include? SubstituteEquivalents
@@ -125,17 +115,17 @@ get '/get_laws/:element' do
     find_equivalences(wff).each{|eq| laws << eq}
   end
   ProofHolder.SetLaws(laws)
-  puts laws.inspect
+  #puts laws.inspect
   status 200
   content_type :json
   body laws.map{|x| x.to_s}.to_json
 end
 
 post '/apply_law' do
-  puts "In apply law"
+  #puts "In apply law"
   laws = ProofHolder.GetLaws()
   law = laws[params[:law].to_i]
-  puts law.inspect
+  #puts law.inspect
   if law < Equivalence
     law = SubstituteEquivalents.new law
   else
@@ -150,39 +140,14 @@ post '/apply_law' do
   status 200
   content_type :json
   if cur_step
-    body ({:message => "more", :proof => latex, :next_step => {:premises => cur_step.implication.premises.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
+    body ({:message => "more", :proof => latex, :next_step => {:premises => cur_step.implication.premises.sort.map{|x| x.to_latex}, :conclusion => cur_step.implication.conclusion.to_latex}}.to_json)
   else
     if proof.valid?
-      puts "Valid implication"
+      #puts "Valid implication"
       body ({:message => "valid", :proof => latex}.to_json)
     else
-      puts "Invalid implication: #{proof.get_counterexample.to_s}"
+      #puts "Invalid implication: #{proof.get_counterexample.to_s}"
       body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_latex}.to_json)
     end
   end
 end
-
- ###   [wff, law]
-  #      match = /(?<loc>[a-z]*)(?<idx>\d{1,2})/.match(params[:element])
-  #      loc = match[:loc]
-  #      idx = match[:idx]
-  #      cur_step = proof.get_current_step_wffs
-  #      wff = (loc == "premise") ? cur_step[:premises][idx.to_i] : cur_step[:conclusion][idx.to_i]
-  #      if law_string.length == 2
-  #        proof.apply_step law, wff, law_string[1].to_i
-  #      else
-  #        proof.apply_step law, wff
-  #      end
-  #      cur_step = proof.get_current_step_wffs
-  #      content_type :json
-  #      status 200
-  #      if cur_step
-  #        body ({:message => "more", :proof => proof.to_latex, :next_step => {:premises => cur_step[:premises].map{|x| x.to_latex}, :conclusion => cur_step[:conclusion].map{|x| x.to_latex}}}.to_json)
-  #      else
-  #        if proof.valid?
-  #          body ({:message => "valid", :proof => proof.to_latex}.to_json)
-  #        else
-  #          body ({:message => "invalid", :proof => proof.to_latex, :counterexample => proof.get_counterexample}.to_json)
-  #        end
-  #      end
-

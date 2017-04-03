@@ -13,15 +13,8 @@ function get_laws(id){
     $.get(getBaseUrl() + "get_laws/" + id, function(data){
         var lawdiv = $("#availablelaws");
         $.each(data, function(index, value){
-            if (value == true){
-              lawdiv.append('<button class="law_item btn-lg btn-success" id="' + index + '"> ' + index +'</button>');
-              }
-            else{
-              var law = index
-              $.each(value, function(index, value){
-                lawdiv.append('<button class="law_item btn-lg btn-success" id="' + law + '_' + index + '"> ' + law + ': ' + value +'</button>');
-              })
-            }
+            console.log(index);
+            lawdiv.append('<button class="law_item btn-lg btn-success" id="' + index + '"> ' + value +'</button>');
         });
     })
     $('#select_law').css('visibility', 'visible');
@@ -29,6 +22,7 @@ function get_laws(id){
 
 
 function refresh_proof_table(data){
+    console.log(data)
     $('#prooftable tbody tr').remove();
     $.each(data, function(index, value){
         var rowid = "proofrow"+index
@@ -55,10 +49,8 @@ function refresh_next_step(data){
     });
     field.append('<span class="implication_separator">\\(\\models\\)</span>')
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('.implication_separator').get()]);
-    $.each(data.conclusion, function(index,value){
-        field.append('<span class="wff" id="conclusion' + index + '"> \\(' + value + '\\) </span>')
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#conclusion' + index).get()]);
-    })
+    field.append('<span class="wff" id="conclusion"> \\(' + data.conclusion + '\\) </span>')
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#conclusion').get()]);
     $('#select_component').css('visibility', 'visible');
 }
 
@@ -87,6 +79,7 @@ $(document).ready(function (){
 });
 
 function respond_to_data(data){
+    console.log(data)
         if(data.message == "more"){
             $('#next_step').removeClass("hidden");
             $('#next_step').addClass("panel-primary");
@@ -103,7 +96,8 @@ function respond_to_data(data){
             }
             else{
                 $('#done').addClass("panel-danger")
-                $('#done_message').html('<p class="lead panel-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> Counterexample:  ' + data.counterexample + '</p>')
+                $('#done_message').html('<p class="lead panel-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> </p><p class="lead panel-body"><span id="counterexample"> Counterexample:</span><span id="ce_formula">' + data.counterexample + '</span></p>')
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#ce_formula').get()]);
             }
         }
         $('#select_law').css("visibility", "hidden")

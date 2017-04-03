@@ -1,26 +1,38 @@
-require_relative "Connectives"
-
-# Implemented Implication laws
-# Conditional conclusion
-# Disjoining
-# Monotonicity
-
 class Implication
 
   attr_accessor :premises, :conclusion
 
-  def initialize premises_ary, conclusion_ary
+  def initialize premises_ary, conclusion
     @premises = premises_ary
-    @conclusion = conclusion_ary
+    @conclusion = conclusion
+  end
+
+  def done?
+    return true if trivial? or elementary?
+    return false
+  end
+
+  def abort?
+    #puts "Checking whether to abort. Current claim is trivial? #{trivial?}. Current claim is elementary? #{elementary?}"
+    return true if elementary? and not trivial?
+    return false
   end
 
   def trivial?
-    return true if (self.inconsistent_premises? or self.premises_contain_conclusion?)
+    return true if (self.inconsistent_premises? or self.premises_contain_conclusion? or self.eq1?)
+    return false
+  end
+
+  def valid?
+    return true if trivial?
     return false
   end
 
   def elementary?
-    return true if @premises.all?{|x| x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)} and @conclusion.all?{|x| x.is_a? Contradiction or x.is_a? Variable or (x.is_unary? and x.connective.is_a? Not and x.atom1.is_a? Variable)}
+    if @premises.any?{|x| x.class == Equality and not x.used?}
+      return false
+    end
+    return true if @premises.all?{|x| x.is_a? AtomicSentence or (x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.is_a? AtomicSentence)} and (@conclusion.is_a? AtomicSentence or @conclusion.is_a? Contradiction or (@conclusion.is_a? CompositeSentence and @conclusion.connective.is_a? Not and @conclusion.element1.is_a? AtomicSentence))
     return false
   end
                                                         
@@ -34,11 +46,12 @@ class Implication
   end
 
   def to_s
-    return (@premises.map{|x| x.to_s}.sort.join(", ") + " ⊧ " + @conclusion.map{|x| x.to_s}.sort.join(", "))
+    return (@premises.sort.map{|x| x.to_s}.join(", ") + " ⊧ " + @conclusion.to_s)
   end
   
   def to_latex
-    return (@premises.map{|x| x.to_latex}.sort.join(", ") + " \\models " + @conclusion.map{|x| x.to_latex}.sort.join(", "))
+    puts "#{@premises.map{|x| x.to_s}.join(',')}\n #{@premises.sort.map{|x| x.to_s}.join(',')}"
+    return (@premises.sort.map{|x| x.to_latex}.join(", ") + " \\models " + @conclusion.to_latex)
   end
 
   def get_vars
@@ -48,30 +61,24 @@ class Implication
 
 
   def add_premise wff
-    puts "Adding premise #{wff.inspect}"
+    #puts "Adding premise #{wff.inspect}"
     unless @premises.any?{|x| x.is_equal? wff}
       if @premises == [nil]
         @premises = [wff]
       else
         @premises << wff
       end
-      puts @premises
-    else
-      puts "Already present: #{wff.to_s}"
+      #puts @premises
     end
   end
 
   def add_conclusion wff
-    unless @conclusion.any?{|x| x.is_equal? wff}
-      @conclusion << wff
-    else
-      puts "Already present: #{wff.to_s}"
-    end
+    @conclusion = wff
   end
 
   def delete_conclusion wff
     begin
-      @conclusion.delete wff
+      @conclusion = nil
     rescue
       raise MissingWFFError
     end
@@ -85,48 +92,18 @@ class Implication
     end
   end
 
-  def disjunction_premise?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? Or}
-    return false
-  end
-
-  def conditional_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? If}
-    return false
-  end
-
-  def disjunction_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? Or}
-    return false
-  end
-
-  def conjunction_premise?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
-    return false
-  end
-
-  def reverse_conjunction_premise?
-    return true if @premises.length > 1
-    return false
-  end
-
-  def conjunction_conclusion?
-    return true if @conclusion.any?{|x| not x.is_a? Variable and x.connective.is_a? And}
-    return false
-  end
-
-  def disjoining?
-    return true if @premises.any?{|x| not x.is_a? Variable and x.connective.is_a? If and @premises.any?{|y| y.is_equal? x.atom1}}
-    return false
-  end
-
   def inconsistent_premises?
-    return true if @premises.any?{|x| @premises.any? {|y| WFF.new(x, Not.new).is_equal? y}}
+    return true if @premises.any?{|x| @premises.any? {|y| CompositeSentence.new(Not.new, x).is_equal? y}}
     return false
   end
 
   def premises_contain_conclusion?
-    return true if @conclusion.all?{|x| @premises.any? {|y| x.is_equal? y}}
+    return true if @premises.any? {|x| x.is_equal? @conclusion}
+    return false
+  end
+
+  def eq1?
+    return true if @premises.any? {|x| x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.class == Equality and (x.element1.element1 == x.element1.element2)}
     return false
   end
 end

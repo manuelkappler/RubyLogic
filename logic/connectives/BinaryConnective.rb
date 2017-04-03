@@ -1,0 +1,3 @@
+class BinaryConnective < Connective
+
+end

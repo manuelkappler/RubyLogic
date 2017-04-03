@@ -22,7 +22,7 @@
 
 #content.container-fluid
   .page-header 
-    %h1 Logic Proof Tool
+    %h1 Logic Proof Tool for PC<sub>0</sub> with Equality
   .panel.panel-primary#input
     .panel-heading#input_heading{:data => {:toggle => "collapse", :target => "#collapse_input"}, :aria => {:expanded => "true", :controls => "collapse_input"}}
       %h2 Enter your formula
@@ -31,10 +31,10 @@
         .implication_input.input-group-lg.col-lg12
           .input-group
             %span.input-group-addon#sizing-addon1 Premises
-            %input.form-control#premises{:type => "text", :placeholder => "Premises: A, A -> B, B <-> C, C or D, etc."}
+            %input.form-control#premises{:type => "text", :placeholder => "Enter Premises, e.g.:  P(a), L(b, c) -> H(d), a ≈ b, c eq d, H(e) <-> H(f)"}
           .input-group
             %span.input-group-addon Conclusion
-            %input.form-control#conclusion{:type => "text", :placeholder => "Conclusion: A -> not (B and C)"}
+            %input.form-control#conclusion{:type => "text", :placeholder => "Enter Conclusion in the same format as premises, e.g.: H(a)"}
           .input-group-btn
             %input.btn.btn-primary.btn-block#submit{:type => "submit"}
   .panel.panel-info.hidden#proof

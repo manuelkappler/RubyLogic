@@ -67,9 +67,39 @@ class Sentence
   end
 
   def <=> other_atom
+    puts "Asked to compare #{self.to_s} with #{other_atom.to_s}"
     return 0 if self.is_equal? other_atom
-    return 1 if other_atom.to_s <= self.to_s
-    return -1 
+    if other_atom.class == Equality
+      if self.class == Equality
+        return self.element1.to_s <=> other_atom.element1.to_s 
+      else
+        return -1
+      end
+    elsif self.class == Equality
+      return -1 * (other_atom <=> self)
+    elsif other_atom.is_a? AtomicSentence
+      if self.is_a? AtomicSentence
+        puts "#{other_atom.predicate.to_s} < #{self.predicate.to_s}? #{other_atom.predicate.to_s < self.predicate.to_s}"
+        if other_atom.predicate.to_s == self.predicate.to_s
+          return self.constants[0].to_s <=> other_atom.constants[0].to_s
+        else
+          return self.predicate.to_s <=> other_atom.predicate.to_s
+        end
+      else self.is_a? CompositeSentence
+        if self.element1.class == AtomicSentence and self.element1.predicate.to_s == other_atom.predicate.to_s
+          puts "Rank atomic sentences of same predicate lower than composite ones"
+          return 1
+        else
+          return self.element1 <=> other_atom 
+        end
+      end
+    elsif other_atom.class == CompositeSentence
+      if self.class == AtomicSentence
+        return self <=> other_atom.element1 
+      else self.class == CompositeSentence
+        return self.element1 <=> other_atom.element1 
+      end
+    end
   end
 end
 
@@ -89,7 +119,7 @@ class AtomicSentence < Sentence
   end
 
   def to_latex
-    puts "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
+    #puts "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
     return "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
   end
 

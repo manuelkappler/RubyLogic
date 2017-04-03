@@ -46,11 +46,12 @@ class Implication
   end
 
   def to_s
-    return (@premises.map{|x| x.to_s}.sort.join(", ") + " ⊧ " + @conclusion.to_s)
+    return (@premises.sort.map{|x| x.to_s}.join(", ") + " ⊧ " + @conclusion.to_s)
   end
   
   def to_latex
-    return (@premises.map{|x| x.to_latex}.sort.join(", ") + " \\models " + @conclusion.to_latex)
+    puts "#{@premises.map{|x| x.to_s}.join(',')}\n #{@premises.sort.map{|x| x.to_s}.join(',')}"
+    return (@premises.sort.map{|x| x.to_latex}.join(", ") + " \\models " + @conclusion.to_latex)
   end
 
   def get_vars

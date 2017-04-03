@@ -1,3 +1,5 @@
+require 'set'
+
 class Interpretation
 
   def initialize predicates, constants
@@ -63,10 +65,10 @@ class Interpretation
   end
 
   def to_latex
-    delta_string = @equalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) = \\delta(#{b})"}.join(", ") + "\\\\" + @inequalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) \\neq \\delta(#{b})"}.join(", ")
-    pi_string = @pi_hash.map{|pred, ext| "\\pi(#{pred}) = #{ext.empty? ? "\\varnothing" : "\\{" + ext.map{|e| '('+ e.map{|d| '\\delta(' + d.to_s + ')'}.join(',') + ')'}.join(',')}\\}"}.join("\\\\")
+    delta_string = '\\[' + @equalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) = \\delta(#{b})"}.join(", ") + "\\] \\[" + @inequalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) \\neq \\delta(#{b})"}.join(", ") + '\\]'
+    pi_string = '\\[' + @pi_hash.map{|pred, ext| "\\pi(#{pred}) = #{ext.empty? ? "\\varnothing" : "\\{" + ext.map{|e| '('+ e.map{|d| '\\delta(' + d.to_s + ')'}.join(',') + ')'}.join(',')}\\}"}.join("\\] \\[") + '\\]'
 
-    return "\\[" + delta_string + "\\\\" + pi_string + "\\]"
+    return delta_string + pi_string 
   end
 
 end

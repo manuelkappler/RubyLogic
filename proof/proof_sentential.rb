@@ -8,9 +8,8 @@ require_relative 'lib/ProofTree'
 require_relative 'lib/parse_string_sentential'
 
 # Load the implication helper class
-# TODO: Implication helper should be moved and made logic-specific
 
-require_relative '../logic/implication_sentential'
+require_relative '../logic/implication'
 
 # Load DeMorgan equivalences (no other equivalence laws needed or used)
 
@@ -38,8 +37,7 @@ class Proof
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
-    constants = (premise_string + conclusion_string).scan(/[a-z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
-    predicates = (premise_string + conclusion_string).scan(/([A-Z])\(([a-z, ]*)\)/).uniq{|x| x[0]}.map.with_object({}){|x, hsh| hsh[x[0]] = Predicate.new(x[0], x[1].split(",").length)}
+    sentences = (premise_string + conclusion_string).scan(/[A-Z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
     premise_ary = premise_string.split(/(?<=[) ]),|(?<=[≈]\s[a-z]),|(?<=[eq]\s[a-z]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
     conclusion = parse_string_pc0 conclusion_string, constants, predicates
     @proof_tree = ProofTree.new [premise_ary, conclusion] 

@@ -8,9 +8,8 @@ require_relative 'lib/ProofTree'
 require_relative 'lib/parse_string'
 
 # Load the implication helper class
-# TODO: Implication helper should be moved and made logic-specific
 
-require_relative '../Implication'
+require_relative '../logic/implication'
 
 # Load DeMorgan equivalences (no other equivalence laws needed or used)
 

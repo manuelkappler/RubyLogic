@@ -2,10 +2,9 @@ require 'set'
 
 class Interpretation
 
-  def initialize predicates, constants
-    @constants = constants
-
-    @predicates = predicates
+  def initialize implication = nil, counterexample = false
+    @predicates = (implication.premises + [implication.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
+    @constants = (implication.premises + [implication.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
 
     @pi_hash = @predicates.map.with_object({}){|pred, hsh| hsh[pred] = Set.new}
     puts @pi_hash
@@ -13,6 +12,33 @@ class Interpretation
     @inequalities = []
     update_inequalities
     print @inequalities.map(&:to_s).join(",") + "\n"
+    if counterexample
+      construct_counterexample implication
+    end
+  end
+
+  def construct_counterexample implication
+    implication.premises.each do |prem|
+      if prem.is_a? CompositeSentence 
+        if prem.element1.class == Equality
+        else
+          raise LogicError unless prem.connective.is_a? Not
+          self.set_predicate prem.element1.predicate, false, prem.element1.constants
+        end
+      elsif prem.class == Equality
+        self.add_equality prem
+      elsif prem.is_a? AtomicSentence
+        self.set_predicate prem.predicate, true, prem.constants
+      end
+    end
+    unless implication.conclusion.is_a? Contradiction
+      if implication.conclusion.is_a? CompositeSentence
+        raise LogicError unless implication.conclusion.connective.is_a? Not
+        self.set_predicate implication.conclusion.element1.predicate, true, implication.conclusion.element1.constants
+      else
+        self.set_predicate implication.conclusion.predicate, false, implication.conclusion.constants
+      end
+    end
   end
 
   def set_predicate predicate, boolean, constants
@@ -66,7 +92,7 @@ class Interpretation
 
   def to_latex
     delta_string = '\\[' + @equalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) = \\delta(#{b})"}.join(", ") + "\\] \\[" + @inequalities.map{|x| a, b = [x.element1, x.element2].map(&:to_s).sort; "\\delta(#{a}) \\neq \\delta(#{b})"}.join(", ") + '\\]'
-    pi_string = '\\[' + @pi_hash.map{|pred, ext| "\\pi(#{pred}) = #{ext.empty? ? "\\varnothing" : "\\{" + ext.map{|e| '('+ e.map{|d| '\\delta(' + d.to_s + ')'}.join(',') + ')'}.join(',')}\\}"}.join("\\] \\[") + '\\]'
+    pi_string = '\\[' + @pi_hash.map{|pred, ext| "\\pi(#{pred}) = #{ext.empty? ? '\\varnothing' : ('\\{' + ext.map{|e| '('+ e.map{|d| '\\delta(' + d.to_s + ')'}.join(',') + ')'}.join(',') + '\\}')}"}.join("\\] \\[") + '\\]'
 
     return delta_string + pi_string 
   end

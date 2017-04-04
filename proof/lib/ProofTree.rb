@@ -38,31 +38,7 @@ class ProofTree
   def construct_counterexample impl
     return false unless impl.elementary?
     return nil if impl.valid?
-    predicates = (impl.premises + [impl.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
-    constants = (impl.premises + [impl.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
-    int = Interpretation.new predicates, constants
-    impl.premises.each do |prem|
-      if prem.is_a? CompositeSentence 
-        if prem.element1.class == Equality
-        else
-          raise LogicError unless prem.connective.is_a? Not
-          int.set_predicate prem.element1.predicate, false, prem.element1.constants
-        end
-      elsif prem.class == Equality
-        int.add_equality prem
-      elsif prem.is_a? AtomicSentence
-        int.set_predicate prem.predicate, true, prem.constants
-      end
-    end
-    unless impl.conclusion.is_a? Contradiction
-      if impl.conclusion.is_a? CompositeSentence
-        raise LogicError unless impl.conclusion.connective.is_a? Not
-        int.set_predicate impl.conclusion.element1.predicate, true, impl.conclusion.element1.constants
-      else
-        int.set_predicate impl.conclusion.predicate, false, impl.conclusion.constants
-      end
-    end
-    return int
+    return Interpretation.new impl, true
   end
 
   def get_current_step

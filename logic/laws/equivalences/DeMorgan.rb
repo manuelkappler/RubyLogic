@@ -10,11 +10,12 @@ class DeMorgan < Equivalence
   end
 
   def apply
+    puts "In apply demorgan, cur_wff = #{self.wff.to_s}"
     cur_wff = self.wff
     inside = cur_wff.element1
     neg = Not.new
     negated_el1 = (inside.element1.is_a? CompositeSentence and inside.element1.connective.is_a? Not) ?  inside.element1.element1 : CompositeSentence.new(neg, inside.element1)
-    negated_el2 = (inside.element2.is_a? CompositeSentence and inside.element1.connective.is_a? Not) ?  inside.element2.element1 : CompositeSentence.new(neg, inside.element2)
+    negated_el2 = (inside.element2.is_a? CompositeSentence and inside.element2.connective.is_a? Not) ?  inside.element2.element1 : CompositeSentence.new(neg, inside.element2)
     if @connective.is_a? And
       @wff = CompositeSentence.new(Or.new, negated_el1, negated_el2)
     elsif @connective.is_a? Or

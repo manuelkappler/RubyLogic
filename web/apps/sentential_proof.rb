@@ -2,7 +2,7 @@ require 'sinatra'
 require 'json'
 require_relative '../../proof/proof_sentential.rb'
 
-class ProofPred < Sinatra::Base
+class ProofSent < Sinatra::Base
   set :root, File.expand_path('../../', __FILE__)
   class ProofHolder
 

@@ -37,9 +37,9 @@ class Proof
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
-    sentences = (premise_string + conclusion_string).scan(/[A-Z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Constant.new x}
-    premise_ary = premise_string.split(/(?<=[) ]),|(?<=[≈]\s[a-z]),|(?<=[eq]\s[a-z]),/).map(&:strip).map{|element| parse_string_pc0 element, constants, predicates}
-    conclusion = parse_string_pc0 conclusion_string, constants, predicates
+    variables = (premise_string + conclusion_string).scan(/[A-Z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Variable.new x}
+    premise_ary = premise_string.split(',').map(&:strip).map{|element| parse_string element, variables}
+    conclusion = parse_string conclusion_string, variables
     @proof_tree = ProofTree.new [premise_ary, conclusion] 
   end
 

@@ -16,12 +16,6 @@ end
 #  end
 #end
 
-class ProofSent < Sinatra::Base
-  get '/' do
-    "<h1> In sentential logic </h1>"
-  end
-end
-
 class TruthTable < Sinatra::Base
   get '/' do
     "<h1> In TruthTable </h1>"

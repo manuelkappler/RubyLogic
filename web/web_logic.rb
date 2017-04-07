@@ -3,8 +3,7 @@ require 'json'
 
 class MainApp < Sinatra::Base
   get '/' do
-    content_type :html
-    "<h1> Welcome </h1>"
+    haml :index
   end
 end
 

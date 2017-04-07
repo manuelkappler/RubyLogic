@@ -25,3 +25,28 @@ div.wff.selected{
 .next_step{
     display: none;
 }
+
+html{
+	position: relative;
+	min-height: 100%;
+}
+body{
+  /* Margin bottom by footer height */
+  margin-bottom: 70px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 52px;
+  line-height: 40px; /* Vertically center the text there */
+  background-color: #f5f5f5;
+}
+.no-transition {
+      -webkit-transition: height 0.01s;
+        -moz-transition: height 0.01s;
+          -ms-transition: height 0.01s;
+            -o-transition: height 0.01s;
+              transition: height 0.01s;
+              }

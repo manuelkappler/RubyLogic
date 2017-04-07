@@ -9,15 +9,17 @@ function getBaseUrl() {
 }
 
 function get_laws(id){
-    $('#availablelaws button').remove();
+    $('#availablelaws').html("");
     $.get(getBaseUrl() + "get_laws/" + id, function(data){
         var lawdiv = $("#availablelaws");
+        console.log(data)
         $.each(data, function(index, value){
-            console.log(index);
+            console.log(index, value);
             lawdiv.append('<button class="law_item btn-lg btn-success" id="' + index + '"> ' + value +'</button>');
         });
     })
     $('#select_law').css('visibility', 'visible');
+    $("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
 
@@ -30,13 +32,14 @@ function refresh_proof_table(data){
         $('#prooftable tbody').append(newrow);
         console.log(value[3]);
         console.log(value[3] == "✔");
-        if(value[3] == "✔"){ $('#' + rowid).addClass("bg-success")};
-        if(value[3] == "✘"){ $('#' + rowid).addClass("bg-danger")};
+        if(value[3] == "✔"){ $('#' + rowid).addClass("table-success")};
+        if(value[3] == "✘"){ $('#' + rowid).addClass("table-danger")};
         var proofspan = $("#proofspan" + index).get();
         MathJax.Hub.Queue(["Typeset", MathJax.Hub, proofspan]);
         var lawspan = $("#lawspan" + index).get();
         MathJax.Hub.Queue(["Typeset", MathJax.Hub, lawspan]);
     });
+    $("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
 function refresh_next_step(data){
@@ -52,19 +55,22 @@ function refresh_next_step(data){
     field.append('<span class="wff" id="conclusion"> \\(' + data.conclusion + '\\) </span>')
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#conclusion').get()]);
     $('#select_component').css('visibility', 'visible');
+    $("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
 
 function reset_all(){
-    $('#input').removeClass("panel-primary");
-    $('#input').addClass("panel-default");
+    $('#input_title_block').removeClass("bg-primary card-inverse");
+    $('#input_title_block').addClass("bg-default");
+    $('#input').removeClass("card-primary");
+    $('#input').addClass("card-default");
     $('#submit').removeClass("btn-primary");
     $('#done_message').html("");
-    $('#proof').removeClass("hidden");
-    $('#done').addClass("hidden");
-    $('#done').removeClass("panel-danger");
-    $('#done').removeClass("panel-success");
-    $('#next_step').addClass("hidden");
+    $('#proof').removeClass("hidden-xl-down");
+    $('#done').addClass("hidden-xl-down");
+    $('#done_title').removeClass("bg-danger");
+    $('#done_title').removeClass("bg-success");
+    $('#next_step').addClass("hidden-xl-down");
 }
 
 $(document).ready(function (){
@@ -76,27 +82,46 @@ $(document).ready(function (){
             {"premises": $("#premises").val(), "conclusion": $("#conclusion").val()}, 
             function(data) { respond_to_data(data) })
     });
+	$('#collapse_input').on('show.bs.collapse', function(event){
+		toggle_input_colors(event)
+	});
+	$('#collapse_input').on('hide.bs.collapse', function(event){
+		toggle_input_colors(event)
+	});
 });
+
+function toggle_input_colors(e){
+	if(e.type == "hide"){
+		$('#input_title_block').removeClass('card-inverse bg-primary')
+		$('#input_title_block').addClass('card-default')
+	}
+	else{
+		$('#input_title_block').addClass('card-inverse bg-primary')
+		$('#input_title_block').removeClass('card-default')
+	}
+
+}
+	
 
 function respond_to_data(data){
     console.log(data)
         if(data.message == "more"){
-            $('#next_step').removeClass("hidden");
+            $('#next_step').removeClass("hidden-xl-down");
             $('#next_step').addClass("panel-primary");
             refresh_proof_table(data.proof);
             refresh_next_step(data.next_step);
         }
         else{
             refresh_proof_table(data.proof);
-            $('#next_step').addClass("hidden");
-            $('#done').removeClass("hidden");
+            $('#next_step').addClass("hidden-xl-down");
+            $('#done').removeClass("hidden-xl-down");
             if(data.message == "valid"){
-                $('#done').addClass("panel-success")
-                $('#done_message').html('<p class="lead panel-body">You are done. The implication is valid. <span class="glyphicon glyphicon-ok" align="right"></span> </p>')
+                $('#done_title').addClass("bg-success")
+                $('#done_message').html('<p class="lead card-body">You are done. The implication is valid. <span class="glyphicon glyphicon-ok" align="right"></span> </p>')
             }
             else{
-                $('#done').addClass("panel-danger")
-                $('#done_message').html('<p class="lead panel-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> </p><p class="lead panel-body"><span id="counterexample"> Counterexample:</span><span id="ce_formula">' + data.counterexample + '</span></p>')
+                $('#done_title').addClass("bg-danger")
+                $('#done_message').html('<p class="lead card-body">You are done. The implication is invalid. <span class="glyphicon glyphicon-remove" align="right"></span><br> </p><p class="lead card-body"><span id="counterexample"> Counterexample:</span><span id="ce_formula">' + data.counterexample + '</span></p>')
                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#ce_formula').get()]);
             }
         }
@@ -115,6 +140,7 @@ $(document).on('click', '.law_item', function(event) {
 });
 
 $(document).on('click', '.wff', function(event) {
+    console.log("Clicked on a wff")
     $('.wff.selected').removeClass("selected")
     $(this).addClass("selected")
     get_laws($(this).closest('.wff').attr("id"))

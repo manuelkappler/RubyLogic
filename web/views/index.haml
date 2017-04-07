@@ -1,69 +1,29 @@
-<head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-
-<!-- Bootstrap CDN -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-<!-- Optional theme -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-<!-- /Bootstrap -->
-
-%link(rel="stylesheet" type="text/css" href="styles.css")
-
-<script src="index.js"></script>
-<title> Manuel's Proof Tool</title>
-</head>
-
-
-#content.container-fluid
-  .page-header 
-    %h1 Logic Proof Tool for PC<sub>0</sub> with Equality
-  .panel.panel-primary#input
-    .panel-heading#input_heading{:data => {:toggle => "collapse", :target => "#collapse_input"}, :aria => {:expanded => "true", :controls => "collapse_input"}}
-      %h2 Enter your formula
-    .panel-collapse#collapse_input.collapse.in{:role => "tabpanel", :aria => {:labeledby => "input_heading"}}
-      .panel-body
-        .implication_input.input-group-lg.col-lg12
-          .input-group
-            %span.input-group-addon#sizing-addon1 Premises
-            %input.form-control#premises{:type => "text", :placeholder => "Enter Premises, e.g.:  P(a), L(b, c) -> H(d), a ≈ b, c eq d, H(e) <-> H(f)"}
-          .input-group
-            %span.input-group-addon Conclusion
-            %input.form-control#conclusion{:type => "text", :placeholder => "Enter Conclusion in the same format as premises, e.g.: H(a)"}
-          .input-group-btn
-            %input.btn.btn-primary.btn-block#submit{:type => "submit"}
-  .panel.panel-info.hidden#proof
-    .panel-heading 
-      %h2 Proof
-    .proof_table.col-lg12
-      %table.table-condensed#prooftable{:style => "width: 100%"}
-        %thead
-          %tr
-            %th.prooftable Step
-            %th.prooftable Implication
-            %th.prooftable Law
-            %th.prooftable ✔/✘
-        %tbody
-  .panel.panel-default.hidden#next_step
-    .panel-heading
-      %h2 Next step
-    .panel-body
-      .panel.panel-default
-        .panel-heading
-          %h3.instruction#select_component    Select a component to work on
-        .panel-body
-          #workingon
-      .panel.panel-default
-        .panel-heading
-          %h3.instruction.col-md-12#select_law    Select which law to apply
-        .panel-body
-          #availablelaws
-  .panel.panel-default.hidden#done
-    .panel-heading
-      %h2 Done
-    .panel-body#done_message
+.row
+  .col-md-5
+    .panel
+      .bg-success
+        %h1 
+          New tool: 
+          %small
+            PC<sub>0</sub> with Equality
+        %p
+          The proving tool for PC<sub>0</sub> has finally been released into an "open beta". If you find any mistakes please file a bug report on
+          %a{:href => "https://github.com/manuelkappler/rubylogic"} GitHub
+          %p
+            %a.btn.btn-primary.btn-lg{:href => "/predicate_logic/"}
+              Have a look!
+.container
+  .row
+    .panel
+      .bg-success
+        %h1
+          New tool:
+          %small
+            Sentential Logic Proofs
+        %p
+          The proving tool for 
+          %a{:href => "sentential_proof/"} Sentential Logic 
+          has been released. 
+        %p
+          %a.btn.btn-primary.btn-lg{:href => "sentential_logic/"}
+            Have a look!

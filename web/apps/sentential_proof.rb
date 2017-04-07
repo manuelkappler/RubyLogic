@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'json'
-require_relative '../../proof/proof_sentential.rb'
+require_relative '../../proof/proof_sentential'
 
 class ProofSent < Sinatra::Base
   set :root, File.expand_path('../../', __FILE__)
@@ -58,7 +58,7 @@ class ProofSent < Sinatra::Base
   end
 
   get '/' do
-    haml :index
+    haml :sentential_proof
   end
 
   get '/to_latex' do
@@ -72,7 +72,7 @@ class ProofSent < Sinatra::Base
     premise_string = params[:premises]
     conclusion_string = params[:conclusion]
     begin
-      proof = Proof.new premise_string, conclusion_string
+      proof = SententialProof.new premise_string, conclusion_string
       #puts proof.inspect
       ProofHolder::SetProof( proof )
       status 200

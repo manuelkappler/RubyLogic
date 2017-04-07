@@ -1,4 +1,4 @@
-def parse_string input_string, variable_hsh
+def parse_string_sentential input_string, variable_hsh
   #puts input_string
   neg, disj, conj, cond, bicond, paren = [Not.new, Or.new, And.new, If.new, Iff.new, LeftParenthesis.new]
   operators = {"not" => neg, "¬" => neg, "or" => disj, "∨" => disj, "∧" => conj, "and" => conj, "->" => cond, "<->" => bicond, "→" => cond, "↔" => bicond, "(" => paren} 

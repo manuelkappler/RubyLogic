@@ -1,45 +1,48 @@
-# Load syntax and semantics
- 
-require_relative '../logic/syntax_sentential'
-require_relative '../logic/semantics_sentential'
-
-# Load helper functions: the ProofTree class which keeps track of the proof, and parse_string which turns strings into an Implication claim
-require_relative 'lib/ProofTree'
-require_relative 'lib/parse_string_sentential'
-
-# Load the implication helper class
-
-require_relative '../logic/implication'
-
-# Load DeMorgan equivalences (no other equivalence laws needed or used)
-
-require_relative "../logic/laws/equivalences/Equivalence"
-require_relative "../logic/laws/equivalences/DeMorgan"
-require_relative "../logic/laws/equivalences/DoubleNegation"
-
-# Load all Implication Laws for pc0
-
-require_relative "../logic/laws/Law"
-require_relative "../logic/laws/BranchingLaw"
-require_relative "../logic/laws/Given"
-require_relative "../logic/laws/ConjunctionPremise"
-require_relative "../logic/laws/ConjunctionConclusion"
-require_relative "../logic/laws/DisjunctionPremise"
-require_relative "../logic/laws/DisjunctionConclusion"
-require_relative "../logic/laws/ConditionalPremise"
-require_relative "../logic/laws/ConditionalConclusion"
-require_relative "../logic/laws/BiconditionalPremise"
-require_relative "../logic/laws/BiconditionalConclusion"
-require_relative "../logic/laws/ContradictoryConclusion"
-
-class Proof
+class SententialProof
 
   attr_reader :proof_tree
 
   def initialize premise_string, conclusion_string
+
+    # Load syntax and semantics
+     
+    load File::expand_path('../logic/syntax_sentential.rb')
+    load File::expand_path('../logic/semantics_sentential.rb')
+
+    # Load helper functions: the ProofTree class which keeps track of the proof, and parse_string which turns strings into an Implication claim
+     
+    load File::expand_path('../proof/lib/ProofTree.rb')
+    load File::expand_path('../proof/lib/parse_string_sentential.rb')
+
+    # Load the implication helper class
+
+    load File::expand_path('../logic/implication.rb')
+
+    # Load DeMorgan equivalences (no other equivalence laws needed or used)
+
+    load File::expand_path("../logic/laws/equivalences/Equivalence.rb")
+    load File::expand_path("../logic/laws/equivalences/DeMorgan.rb")
+    load File::expand_path("../logic/laws/equivalences/DoubleNegation.rb")
+
+    # Load all Implication Laws for pc0
+
+    load File::expand_path("../logic/laws/Law.rb")
+    load File::expand_path("../logic/laws/BranchingLaw.rb")
+    load File::expand_path("../logic/laws/Given.rb")
+    load File::expand_path("../logic/laws/ConjunctionPremise.rb")
+    load File::expand_path("../logic/laws/ConjunctionConclusion.rb")
+    load File::expand_path("../logic/laws/DisjunctionPremise.rb")
+    load File::expand_path("../logic/laws/DisjunctionConclusion.rb")
+    load File::expand_path("../logic/laws/ConditionalPremise.rb")
+    load File::expand_path("../logic/laws/ConditionalConclusion.rb")
+    load File::expand_path("../logic/laws/BiconditionalPremise.rb")
+    load File::expand_path("../logic/laws/BiconditionalConclusion.rb")
+    load File::expand_path("../logic/laws/ContradictoryConclusion.rb")
+    load File::expand_path("../logic/laws/SubstituteEquivalents.rb")
+
     variables = (premise_string + conclusion_string).scan(/[A-Z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = Variable.new x}
-    premise_ary = premise_string.split(',').map(&:strip).map{|element| parse_string element, variables}
-    conclusion = parse_string conclusion_string, variables
+    premise_ary = premise_string.split(',').map(&:strip).map{|element| parse_string_sentential element, variables}
+    conclusion = parse_string_sentential conclusion_string, variables
     @proof_tree = ProofTree.new [premise_ary, conclusion] 
   end
 

@@ -1,29 +1,29 @@
-.row
-  .col-md-5
-    .panel
-      .bg-success
-        %h1 
-          New tool: 
-          %small
-            PC<sub>0</sub> with Equality
+.card
+  .card-block.bg-success
+    .card-title
+      %h1 
+        New tool: 
+        %small
+          PC<sub>0</sub> with Equality
+  .card-block
+    .card-title 
+      %p
+        The proving tool for PC<sub>0</sub> has finally been released into an "open beta". If you find any mistakes please file a bug report on
+        %a{:href => "https://github.com/manuelkappler/rubylogic"} GitHub
         %p
-          The proving tool for PC<sub>0</sub> has finally been released into an "open beta". If you find any mistakes please file a bug report on
-          %a{:href => "https://github.com/manuelkappler/rubylogic"} GitHub
-          %p
-            %a.btn.btn-primary.btn-lg{:href => "/predicate_logic/"}
-              Have a look!
-.container
-  .row
-    .panel
-      .bg-success
-        %h1
-          New tool:
-          %small
-            Sentential Logic Proofs
-        %p
-          The proving tool for 
-          %a{:href => "sentential_proof/"} Sentential Logic 
-          has been released. 
-        %p
-          %a.btn.btn-primary.btn-lg{:href => "sentential_logic/"}
+          %a.btn.btn-primary.btn-lg{:href => "/predicate_logic/"}
             Have a look!
+  .card
+    .card-block.bg-success
+      %h1
+        New tool:
+        %small
+          Sentential Logic Proofs
+    .card-block
+      %p
+        The proving tool for 
+        %a{:href => "sentential_proof/"} Sentential Logic 
+        has been released. 
+      %p
+        %a.btn.btn-primary.btn-lg{:href => "sentential_logic/"}
+          Have a look!

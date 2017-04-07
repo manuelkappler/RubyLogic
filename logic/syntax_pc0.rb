@@ -63,14 +63,18 @@ class Sentence
   def is_equal? other_atom
     if self.class != other_atom.class
       return false
-    elsif self.is_a? AtomicSentence or other_atom.is_a? AtomicSentence
-      return (self.predicate == other_atom.predicate and self.constants.map.with_index{|x, idx| true if other_atom.constants[idx] == x}.all?)
-    elsif (self.is_a? CompositeSentence) != (other_atom.is_a? CompositeSentence)
-      return false
+    elsif self.is_a? AtomicSentence and self.is_a? other_atom.class
+      return (self.predicate.to_s == other_atom.predicate.to_s and self.constants.map.with_index{|x, idx| true if other_atom.constants[idx].to_s == x.to_s}.all?)
     elsif (self.is_a? CompositeSentence) and (other_atom.is_a? CompositeSentence)
-      return (self.connective.is_a? other_atom.connective.class and self.element1.is_equal? other_atom.element1)
+      if self.connective.is_a? other_atom.connective.class
+        if self.connective.is_a? UnaryConnective
+          return true if self.element1.is_equal? other_atom.element1
+        else
+          return true if (self.element1.is_equal? other_atom.element1 and self.element2.is_equal? other_atom.element2)
+        end
+      end
     else
-      return (self.element1.is_equal? other_atom.element1 and self.element2.is_equal? other_atom.element2 and self.connective.is_a? other_atom.connective.class)
+      raise LogicError
     end
   end
 
@@ -79,7 +83,7 @@ class Sentence
   end
 
   def <=> other_atom
-    puts "Asked to compare #{self.to_s} with #{other_atom.to_s}"
+    #puts "Asked to compare #{self.to_s} with #{other_atom.to_s}"
     return 0 if self.is_equal? other_atom
     if other_atom.class == Equality
       if self.class == Equality
@@ -91,7 +95,7 @@ class Sentence
       return -1 * (other_atom <=> self)
     elsif other_atom.is_a? AtomicSentence
       if self.is_a? AtomicSentence
-        puts "#{other_atom.predicate.to_s} < #{self.predicate.to_s}? #{other_atom.predicate.to_s < self.predicate.to_s}"
+        #puts "#{other_atom.predicate.to_s} < #{self.predicate.to_s}? #{other_atom.predicate.to_s < self.predicate.to_s}"
         if other_atom.predicate.to_s == self.predicate.to_s
           return self.constants[0].to_s <=> other_atom.constants[0].to_s
         else
@@ -99,7 +103,7 @@ class Sentence
         end
       else self.is_a? CompositeSentence
         if self.element1.class == AtomicSentence and self.element1.predicate.to_s == other_atom.predicate.to_s
-          puts "Rank atomic sentences of same predicate lower than composite ones"
+          #puts "Rank atomic sentences of same predicate lower than composite ones"
           return 1
         else
           return self.element1 <=> other_atom 

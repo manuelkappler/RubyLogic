@@ -1,9 +1,10 @@
 require 'sinatra'
 require 'json'
-require_relative '../../proof/proof_pc0.rb'
+require_relative '../../proof/proof_pc0'
 
 class ProofPred < Sinatra::Base
   set :root, File.expand_path('../../', __FILE__)
+
   class ProofHolder
 
     @@proof = nil
@@ -54,11 +55,12 @@ class ProofPred < Sinatra::Base
   end
 
   configure do
+    puts "Called PredProof.new"
     ProofHolder::init()
   end
 
   get '/' do
-    haml :index
+    haml :predicate_proof
   end
 
   get '/to_latex' do
@@ -69,11 +71,12 @@ class ProofPred < Sinatra::Base
   end
 
   post '/formula_string' do
+    puts params
     premise_string = params[:premises]
     conclusion_string = params[:conclusion]
     begin
-      proof = Proof.new premise_string, conclusion_string
-      #puts proof.inspect
+      proof = PC0Proof.new premise_string, conclusion_string
+      puts proof.inspect
       ProofHolder::SetProof( proof )
       status 200
       content_type :json
@@ -88,7 +91,7 @@ class ProofPred < Sinatra::Base
           body ({:message => "valid", :proof => latex}.to_json)
         else
           #puts "Invalid implication: #{proof.get_counterexample.to_s}"
-          body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_s}.to_json)
+          body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_latex}.to_json)
         end
       end
     rescue Exception => e
@@ -117,7 +120,7 @@ class ProofPred < Sinatra::Base
       find_equivalences(wff).each{|eq| laws << eq}
     end
     ProofHolder.SetLaws(laws)
-    #puts laws.inspect
+    puts laws.inspect
     status 200
     content_type :json
     body laws.map{|x| x.to_s}.to_json

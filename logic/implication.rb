@@ -29,8 +29,11 @@ class Implication
   end
 
   def elementary?
-    if @premises.any?{|x| x.class == Equality and not x.used?}
-      return false
+    begin
+      if @premises.any?{|x| x.class == Equality and not x.used?}
+        return false
+      end
+    rescue
     end
     return true if @premises.all?{|x| x.is_a? AtomicSentence or (x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.is_a? AtomicSentence)} and (@conclusion.is_a? AtomicSentence or @conclusion.is_a? Contradiction or (@conclusion.is_a? CompositeSentence and @conclusion.connective.is_a? Not and @conclusion.element1.is_a? AtomicSentence))
     return false
@@ -103,8 +106,12 @@ class Implication
   end
 
   def eq1?
-    return true if @premises.any? {|x| x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.class == Equality and (x.element1.element1 == x.element1.element2)}
-    return false
+    begin
+      return true if @premises.any? {|x| x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.class == Equality and (x.element1.element1 == x.element1.element2)}
+      return false
+    rescue
+      return false
+    end
   end
 end
 

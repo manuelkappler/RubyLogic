@@ -3,6 +3,7 @@ require 'rack'
 require_relative 'web_logic.rb'
 require_relative 'apps/predicate_proof.rb'
 require_relative 'apps/sentential_proof.rb'
+require_relative 'apps/truthtable.rb'
 
 use Rack::Static, :urls => ['public/styles.css', 'public/index.js'], :root => 'public'
 

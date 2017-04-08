@@ -27,8 +27,3 @@ end
 #  end
 #end
 
-class TruthTable < Sinatra::Base
-  get '/' do
-    "<h1> In TruthTable </h1>"
-  end
-end

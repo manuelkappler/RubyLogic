@@ -16,7 +16,6 @@
 
   %link(rel="stylesheet" type="text/css" href="styles.css")
 
-  %script(src="index.js")
 
   %title Columbia Logic Proof Tool
 
@@ -31,8 +30,8 @@
         %a.navbar-brand Columbia Logic Tools
       .collapse.navbar-collapse#bs-example-navbar-collapse-1
         %ul.nav.navbar-nav.mr-auto
-          %li.nav-link
-            %a{:href => "/"} Home 
+          %li.nav-item
+            %a.nav-link{:href => "/"} Home 
           %li.nav-item.dropdown
             %a.nav-link.dropdown-toggle{:href => "#", :data => {:toggle => "dropdown"}, :role => "button", :aria => {:haspopup => "true", :expanded => "false"}} Sentential Logic
             %ul.dropdown-menu

@@ -80,6 +80,18 @@ class AtomicSentence < Sentence
     return @variable.to_s
   end
 
+  def == other
+    return @variable.to_s == other.to_s
+  end
+
+  def hash
+    @variable.to_s.hash
+  end
+
+  def eql? other
+    return self == other
+  end
+
 end
 
 class Contradiction < Sentence

@@ -39,3 +39,18 @@ class Interpretation
     return '\\[' + @sentences.map{|key, value| "#{key} = #{value}"}.join(',') + '\\]'
   end
 end
+
+def evaluate connective, *tv
+  case connective
+  when Not
+    return (not tv[0])
+  when And
+    return (tv[0] and tv[1])
+  when Or
+    return (tv[0] or tv[1])
+  when If
+    return (not tv[0] or tv[1])
+  when Iff
+    return ((not tv[0] or tv[1]) and (not tv[1] or tv[0]))
+  end
+end

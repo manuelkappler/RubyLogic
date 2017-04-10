@@ -12,11 +12,21 @@
 
 require 'sinatra'
 require 'json'
+require 'pandoc-ruby'
+
+
 
 class MainApp < Sinatra::Base
+	configure do
+			set :reload_templates, true
+	end
+
   get '/' do
+    files = Dir['articles/*.md']
+    @articles = files.map{|x| x = {:title => open(x, &:gets), :content => PandocRuby.markdown(open(x).read).to_html, :link => "/"}}
     haml :index
   end
+
 end
 
 #class ProofPred < Sinatra::Base

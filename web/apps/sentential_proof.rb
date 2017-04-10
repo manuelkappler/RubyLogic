@@ -83,6 +83,7 @@ class ProofSent < Sinatra::Base
   post '/formula_string' do
     premise_string = params[:premises]
     conclusion_string = params[:conclusion]
+    halt 403, "Empty conclusion" if conclusion_string.empty?
     begin
       proof = SententialProof.new premise_string, conclusion_string
       #puts proof.inspect
@@ -103,10 +104,12 @@ class ProofSent < Sinatra::Base
           body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_s}.to_json)
         end
       end
+    rescue ParsingError
+      halt 403, "Could not parse your expression. Make sure to only use capital letters (A, B, ...) for your sentential compounds and the connectives #{ObjectSpace.each_object(Class).select{|cl| cl < BinaryConnective or cl < UnaryConnective}.map{|x| inst = x.new; inst.strings.join(', ')}.join('; ')}"
+    rescue MismatchedParenthesis
+      halt 403, "Mismatched parentheses. Make sure all parentheses are closed properly"
     rescue Exception => e
-      status 400
-      puts e.backtrace
-      body "Could not parse string input"
+      halt 403, "Could not parse string input. la #{e.message} #{e.backtrace}"
     end
   end
 

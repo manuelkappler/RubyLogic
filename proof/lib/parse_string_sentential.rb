@@ -21,10 +21,15 @@ def parse_string_sentential input_string, variable_hsh
     #print "Current premise queue: #{premise_queue.map(&:to_s)}\n"
     #print "Working on: #{element}\n"
     if element == ")"
+      puts "Found a closed paren, operator_stack is #{operator_stack} and premise_queue is #{premise_queue}"
       until operator_stack[-1].is_a? LeftParenthesis or operator_stack[-1].is_a? Sentinel
         premise_queue << operator_stack.pop
       end
-      operator_stack.pop
+      if operator_stack[-1].is_a? Sentinel
+        raise MismatchedParenthesis
+      else
+        operator_stack.pop 
+      end
     elsif ["and","or","->", "<->","∧","∨", "→", "↔"].include? element or ["not", "¬"].include? element
       while (not operator_stack[-1].is_a? Sentinel) and operator_stack[-1] > operators[element]
         premise_queue << operator_stack.pop
@@ -33,9 +38,12 @@ def parse_string_sentential input_string, variable_hsh
     elsif element == "("
       operator_stack << operators[element]
     elsif element == ""
-    else
+    elsif element =~ /[a-zA-Z]/
+      raise ParsingError unless (variable_hsh.has_key? element)
       var = variable_hsh[element[0]]
       premise_queue << AtomicSentence.new(var)
+    else
+      raise StandardError
     end
   end
   until operator_stack[-1].is_a? Sentinel
@@ -68,7 +76,7 @@ class OutputQueue < Array
 
 end
 
-class Sentinel < UnaryConnective
+class Sentinel < Connective
   def initialize
     @precedence = 10
   end
@@ -77,7 +85,7 @@ class Sentinel < UnaryConnective
   end
 end
 
-class EqualityDummy < UnaryConnective
+class EqualityDummy < Connective
   def initialize
     @precedence = 0
   end
@@ -86,11 +94,17 @@ class EqualityDummy < UnaryConnective
   end
 end
 
-class LeftParenthesis < UnaryConnective
+class LeftParenthesis < Connective
   def initialize
     @precedence = 9
   end
   def to_s
     return "("
   end
+end
+
+class MismatchedParenthesis < StandardError
+end
+
+class ParsingError < StandardError
 end

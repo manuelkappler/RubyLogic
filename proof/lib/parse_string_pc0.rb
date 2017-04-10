@@ -30,7 +30,11 @@ def parse_string_pc0 input_string, constants_hsh, predicates_hsh
       until operator_stack[-1].is_a? LeftParenthesis or operator_stack[-1].is_a? Sentinel
         premise_queue << operator_stack.pop
       end
-      operator_stack.pop
+      if operator_stack[-1].is_a? Sentinel
+        raise MismatchedParenthesis
+      else
+        operator_stack.pop
+      end
     elsif ["and","or","->", "<->","∧","∨", "→", "↔"].include? element or ["not", "¬"].include? element
       while (not operator_stack[-1].is_a? Sentinel) and operator_stack[-1] > operators[element]
         premise_queue << operator_stack.pop
@@ -48,8 +52,9 @@ def parse_string_pc0 input_string, constants_hsh, predicates_hsh
         raise LogicError
       end
     else
+      raise ParsingError unless predicates_hsh.has_key? element[0]
       pred = predicates_hsh[element[0]]
-      vars = element.scan(/.*?([a-z]{1}).*?/).flatten.map{|x| constants_hsh[x]}
+      vars = element.scan(/.*?([a-z]{1}).*?/).flatten.map{|x| raise ParsingError unless constants_hsh.has_key? x; constants_hsh[x]}
       premise_queue << AtomicSentence.new(pred, vars)
     end
   end
@@ -83,7 +88,7 @@ class OutputQueue < Array
 
 end
 
-class Sentinel < UnaryConnective
+class Sentinel < Connective
   def initialize
     @precedence = 10
   end
@@ -92,7 +97,7 @@ class Sentinel < UnaryConnective
   end
 end
 
-class EqualityDummy < UnaryConnective
+class EqualityDummy < Connective
   def initialize
     @precedence = 0
   end
@@ -101,11 +106,17 @@ class EqualityDummy < UnaryConnective
   end
 end
 
-class LeftParenthesis < UnaryConnective
+class LeftParenthesis < Connective
   def initialize
     @precedence = 9
   end
   def to_s
     return "("
   end
+end
+
+class MismatchedParenthesis < StandardError
+end
+
+class ParsingError < StandardError
 end

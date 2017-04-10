@@ -86,6 +86,7 @@ class ProofPred < Sinatra::Base
     puts params
     premise_string = params[:premises]
     conclusion_string = params[:conclusion]
+    halt 403, "Empty conclusion" if conclusion_string.empty?
     begin
       proof = PC0Proof.new premise_string, conclusion_string
       puts proof.inspect
@@ -106,10 +107,13 @@ class ProofPred < Sinatra::Base
           body ({:message => "invalid", :proof => latex, :counterexample => proof.get_counterexample.to_latex}.to_json)
         end
       end
+    rescue ParsingError
+      halt 403, "Could not parse your expression. Make sure to only use capital letters (P, Q, ...) for your predicates, lower case letters for terms, and the connectives #{ObjectSpace.each_object(Class).select{|cl| cl < BinaryConnective or cl < UnaryConnective}.map{|x| inst = x.new; inst.strings.join(', ')}.join('; ')}.
+  <br> <b> Here's an example: <br> Premises: P(a, b) -> H(a), not H(a) <br> Conclusion: P(a, b) or H(a)</b>"
+    rescue MismatchedParenthesis
+      halt 403, "Mismatched parentheses. Make sure all parentheses are closed properly"
     rescue Exception => e
-      status 400
-      puts e.backtrace
-      body "Could not parse string input"
+      halt 403, "Could not parse string input. You should inform the developer of this and send him the following: <br> #{e.message} #{e.backtrace}"
     end
   end
 

@@ -18,7 +18,7 @@ class Iff < BinaryConnective
     @precedence = 5
     @symbol = "↔"
     @latex = "\\leftrightarrow "
-    @strings = ["iff", "⇔", "↔", "<->"]
+    @strings = ["↔", "<->"]
   end
 
 end

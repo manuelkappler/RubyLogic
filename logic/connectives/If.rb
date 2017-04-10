@@ -18,7 +18,7 @@ class If < BinaryConnective
     @precedence = 4
     @symbol = "→"
     @latex = "\\rightarrow "
-    @strings = ["if", "->", "→"]
+    @strings = ["->", "→"]
   end
 
 end

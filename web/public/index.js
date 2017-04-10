@@ -71,23 +71,42 @@ function reset_all(){
     $('#done_title').removeClass("bg-danger");
     $('#done_title').removeClass("bg-success");
     $('#next_step').addClass("hidden-xl-down");
+	$('#error_display').html("")
+	$('#error_display').addClass("hidden-xl-down");
 }
 
 $(document).ready(function (){
+	$('#premises').focus()
     $("#submit").on("click", function() {
-        reset_all()
-        $('#collapse_input').collapse('hide');
-        $.post(
+        var post_request = $.post(
             getBaseUrl() + "formula_string", 
-            {"premises": $("#premises").val(), "conclusion": $("#conclusion").val()}, 
-            function(data) { respond_to_data(data) })
-    });
+            {"premises": $("#premises").val(), "conclusion": $("#conclusion").val()})
+        post_request.done(function(data) { 
+			reset_all()
+			$('#collapse_input').collapse('hide');
+			respond_to_data(data) });
+		post_request.fail(function(jqXHR, message, error) { 
+			$('#error_display').empty()
+			$('#error_display').removeClass("hidden-xl-down")
+			$('#error_display').append("<span> " + jqXHR.responseText + "</span>")
+		});
+	});
 	$('#collapse_input').on('show.bs.collapse', function(event){
 		toggle_input_colors(event)
 	});
 	$('#collapse_input').on('hide.bs.collapse', function(event){
 		toggle_input_colors(event)
 	});
+	$('#conclusion').keypress(function (e) {
+		if (e.which == 13) {
+			$('#submit').click()
+		}
+	})
+	$('#premises').keypress(function (e) {
+		if (e.which == 13) {
+			$('#conclusion').focus()
+		}
+	})
 });
 
 function toggle_input_colors(e){
@@ -145,3 +164,4 @@ $(document).on('click', '.wff', function(event) {
     $(this).addClass("selected")
     get_laws($(this).closest('.wff').attr("id"))
 });
+

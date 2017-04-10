@@ -22,36 +22,33 @@
 %body
 
   .container
-
-    %nav.navbar.navbar-toggleable-md.navbar-light
-      .navbar-header
-        %button.navbar-toggler.navbar-toggler-right{:type => "button", :data => {:toggle => "collapse", :target => "#bs-example-navbar-collapse-1"}, :aria => {:expanded => "false"}}
-          %span.navbar-toggler-icon
-        %a.navbar-brand Columbia Logic Tools
-      .collapse.navbar-collapse#bs-example-navbar-collapse-1
-        %ul.nav.navbar-nav.mr-auto
-          %li.nav-item
-            %a.nav-link{:href => "/"} Home 
-          %li.nav-item.dropdown
-            %a.nav-link.dropdown-toggle{:href => "#", :data => {:toggle => "dropdown"}, :role => "button", :aria => {:haspopup => "true", :expanded => "false"}} Sentential Logic
-            %ul.dropdown-menu
-              %li.nav-item
-                %a.nav-link{:href => "../sentential_logic/"} Proof Tool
-              %li.nav-item.disabled
-                %a.nav-link{:href => "../truthtables/"} Truthtables
-          %li.nav-item.dropdown
-            %a.nav-link.dropdown-toggle{:href => "#", :data => {:toggle => "dropdown"}, :role => "button", :aria => {:haspopup => "true", :expanded => "false"}} Predicate Logic 
-            %ul.dropdown-menu
-              %li.nav-item
-                %a.nav-link{:href => "../predicate_logic/"} Proofs in PC<sub>0</sub>
-              %li.nav-item.disabled
-                %a.nav-link{:href => "../first_order_logic/"} Proofs in FOL
-          %li.nav-item.disabled
-            %a.nav-link{:href => "#"} About
+    %nav.navbar
+      %button.navbar-toggler.navbar-toggler-right{:type => "button", :data => {:toggle => "collapse", :target => "#navcontent"}, :aria => {:controls => "navcontent", :expanded => "false"}}
+        %span.navbar-toggler-icon
+      %ul.nav.justify-content-left#navcontent
+        %li.nav-item
+          %a.navbar-brand{:href => "/"} Columbia Logic Tools
+        %li.nav-item
+          %a.nav-link{:href => "/"} Home 
+        %li.nav-item.dropdown
+          %a.nav-link.dropdown-toggle{:href => "#", :data => {:toggle => "dropdown"}, :role => "button", :aria => {:haspopup => "true", :expanded => "false"}} Sentential Logic
+          %ul.dropdown-menu
+            %li.nav-item
+              %a.nav-link{:href => "../sentential_logic/"} Proof Tool
+            %li.nav-item
+              %a.nav-link{:href => "../truthtables/"} Truthtables
+        %li.nav-item.dropdown
+          %a.nav-link.dropdown-toggle{:href => "#", :data => {:toggle => "dropdown"}, :role => "button", :aria => {:haspopup => "true", :expanded => "false"}} Predicate Logic
+          %ul.dropdown-menu
+            %li.nav-item
+              %a.nav-link{:href => "../predicate_logic/"} Proofs in PC<sub>0</sub>
+            %li.nav-item
+              %a.nav-link.disabled{:href => "#"} Proofs in FOL
+        %li.nav-item.disabled
+          %a.nav-link{:href => "#"} About
 
   .container
     = yield
-  .container
 
   %footer.footer#bottom
     .container.pull-right

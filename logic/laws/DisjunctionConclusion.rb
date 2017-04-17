@@ -27,7 +27,11 @@ class DisjunctionConclusion < Law
 
   def disjunction_conclusion state, wff
 
-    new_wff = CompositeSentence.new(Not.new, wff.element1)
+    if wff.element1.is_a? CompositeSentence and wff.element1.connective.is_a? Not
+      new_wff = wff.element1.element1
+    else 
+      new_wff = CompositeSentence.new(Not.new, wff.element1)
+    end
     state.add_premise new_wff
     state.add_conclusion wff.element2
     return state

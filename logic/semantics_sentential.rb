@@ -36,7 +36,7 @@ class Interpretation
   end
 
   def to_latex
-    return '\\[' + @sentences.map{|key, value| "#{key} = #{value}"}.join(',') + '\\]'
+    return '\\[' + @sentences.map{|key, value| "#{key} = #{value}"}.sort.join(',') + '\\]'
   end
 end
 

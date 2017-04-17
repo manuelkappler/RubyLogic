@@ -42,7 +42,7 @@ class TruthTableCreater
     load File::expand_path("../logic/laws/ContradictoryConclusion.rb")
     load File::expand_path("../logic/laws/SubstituteEquivalents.rb")
 
-    @variables = string.scan(/[A-Z]{1}/).uniq.flatten.map.with_object({}){|x, hsh| hsh[x] = AtomicSentence.new(x)}
+    @variables = string.scan(/[A-Z]{1}/).uniq.flatten.sort.map.with_object({}){|x, hsh| hsh[x] = AtomicSentence.new(x)}
     @tt = create_initial_hash 
     @formulas = string.split(',').map(&:strip).map{|element| parse_string_sentential element, @variables}
     @formulas.each{|x|
@@ -77,7 +77,7 @@ class TruthTableCreater
     
 
   def row_wise_ary
-    header = (@variables.values| @formulas).map{|x| "\\[" + x.to_latex + "\\]"}
+    header = (@variables.values | @formulas).map{|x| "\\[" + x.to_latex + "\\]"}
     rows = []
     0.upto(@tt.values[0].length - 1) do |row_index|
       rows << (@variables.values | @formulas).map{|x| val = @tt[x][row_index]; val ? "\\[ T \\]" : "\\[ F \\]"}

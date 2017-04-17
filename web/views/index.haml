@@ -1,14 +1,19 @@
+%script(src="index.js")
 .container
-  - @articles.each do |article|
-    .card.outline-info
-      .card-block.bg-info
-        .card-title
-          %h1 
-            = article[:title]
-      .card-block
-        .card-body
-          %span.article_content.article_preview
-            = "#{article[:content][0..700]}..."
-
-          %span.article_content.article_main
-            = article[:content]
+  - @articles.each_slice(2) do |articles_slice|
+    .row
+      - articles_slice.each do |article|
+        .col-sm-6
+          .card.outline-info
+            .card-block.bg-info
+              .card-title
+                %h2
+                  = article[:title]
+            .card-block
+              .card-body
+                %span.article_content.article_teaser{:id => "#{article[:link]}_teaser"}
+                  = article[:teaser]
+                %span.article_content.hidden-xl-down{:id => "#{article[:link]}_content"}
+                  = article[:content]
+                %a.btn.btn-primary.article_expand{:id => "#{article[:link]}_expand_link"}
+                  Show more >>

@@ -23,7 +23,19 @@ class MainApp < Sinatra::Base
 
   get '/' do
     files = Dir['articles/*.md']
-    @articles = files.map{|x| x = {:title => open(x, &:gets), :content => PandocRuby.markdown(open(x).read).to_html, :link => "/"}}
+    @articles = files.map do |x| 
+      fn = File.basename(x)
+      file_lines = IO.readlines(x)
+      meta_sep = (file_lines[1..-1].find_index{|x| x.strip == ("---")}) + 1
+      meta = file_lines[0..meta_sep]
+      puts meta
+      puts meta.select{|line| line.strip.start_with? "title"}
+      /title:\w?(?<title>.*)/ =~ meta.select{|line| line.strip.start_with? "title"}[0]
+      puts title
+      teaser = file_lines[meta_sep + 1 .. 10].join("\n")
+      text = file_lines[meta_sep + 1..-1].join("\n")
+      {:title => title, :teaser => PandocRuby.markdown(teaser).to_html, :content => PandocRuby.markdown(text).to_html, :link => fn[0..-4]}
+    end
     haml :index
   end
 

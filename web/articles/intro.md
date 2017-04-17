@@ -1,12 +1,13 @@
-Introduction to Sentential Logic
-
-## Sentential logic
+---
+title: Introduction to Sentential Logic
+author: Manuel Kappler
+---
 
 ### Introduction
-- The basic unit for all these programs is the sentence. A sentence is the smallest unit that is always either \\(true\\) or \\(false\\) (and not both).
-- Sentential logic takes sentences as fundamental and provides insight into relations between these sentences:
-  - Given the truth value of two sentences \\(A\\) and \\(B\\), would it be true to say \\(A \\wedge B\\) (read *A and B*)? How about \\(A \\rightarrow B\\) (read *If A then B*)?
-  - In technical terms, sentential logic tells us how to evaluate the truth or falsity of arbitrary compound sentences.
+
+The basic unit of concern in sentential logic is a sentence.  A sentence is always either \\(true\\) or \\(false\\) (and not both). Sentential logic takes sentences as fundamental and provides insight into relations between these sentences:
+- Given the truth value of two sentences \\(A\\) and \\(B\\), would it be true to say \\(A \\wedge B\\) (read *A and B*)? How about \\(A \\rightarrow B\\) (read *If A then B*)?
+- In technical terms, sentential logic tells us how to evaluate the truth or falsity of arbitrary compound sentences.
 
 ### Truth tables
 

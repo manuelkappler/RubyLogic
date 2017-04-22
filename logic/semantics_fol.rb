@@ -15,6 +15,7 @@ require 'set'
 class Interpretation
 
   def initialize implication = nil, counterexample = false
+    @universe = Set.new
     @predicates = (implication.premises + [implication.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
     @constants = (implication.premises + [implication.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
 

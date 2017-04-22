@@ -17,7 +17,11 @@ class ExtensionGraph < Sinatra::Base
 
   post '/extension_submit' do
     extension_string = params[:extension]
-    extension = extension_string.split(/\)\s*,\s*\(/).map{|x| x.split(",").map{|y| /(?<l>[a-z])/ =~ y; l}}
+    puts extension_string
+    puts extension_string.split(/\)\s*,\s*\(/).map{|x| x.split(",")}.inspect
+    extension = extension_string.split(/\)\s*,\s*\(/).map{|x| x.split(",").map{
+      |y| /[[:punct:]]*\s?(?<l>[[:alnum:]]*)/ =~ y; l}}
+    print extension.inspect + "\n"
     if extension.any?{|x| x.length != 2} or extension.empty?
       halt 403, "Something is wrong"
     end

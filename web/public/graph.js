@@ -99,8 +99,8 @@ function create_graph(data){
   .enter().append("svg:marker")    // This section adds in the arrows
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
+    .attr("refX", 0)
+    .attr("refY", 0)
     .attr("markerWidth", 6)
     .attr("markerHeight", 6)
     .attr("orient", "auto")
@@ -112,8 +112,8 @@ function create_graph(data){
   .enter().append("svg:marker")    // This section adds in the arrows
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
+    .attr("refX", 0)
+    .attr("refY", 0)
     .attr("markerWidth", 3)
     .attr("markerHeight", 3)
     .attr("orient", "auto")
@@ -188,7 +188,7 @@ function create_graph(data){
     svg.append("path")
       .attr("d", "M" + sx + "," + sy + "A" + dist + "," + dist + " 0 0,1 " + tx + "," + ty)
       .attr("class", "link " + value.source + "_links links_" + value.target)
-      .attr("marker-end", "url(#end)");
+      .attr("marker-mid", "url(#end)");
     }
   })
   /*

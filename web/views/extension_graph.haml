@@ -11,28 +11,29 @@
     fill: none;
     stroke-width: 2px;
     stroke-dasharray: 3, 3;
+    alpha: 0.5;
   }
   .link.non_highlighted {
     stroke: steelblue;
     fill: none;
     stroke-width: 1px;
     stroke-dasharray: 3, 10;
-    marker-end: none;
+    marker-mid: none;
   }
   .link.highlight_from {
-    marker-end: url(#highlight);
+    marker-mid: url(#highlight);
     stroke-width: 5px;
     stroke: coral;
     stroke-dasharray: 5, 5;
   }
   .link.highlight_to {
-    marker-end: url(#highlight);
+    marker-mid: url(#highlight);
     stroke-width: 5px;
     stroke: forestgreen;
     stroke-dasharray: 10, 5;
   }
   .link.self_referenced{
-    marker-end: none;
+    marker-mid: none;
   }
   .node circle {
     fill: #2a3;

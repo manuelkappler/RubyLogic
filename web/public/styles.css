@@ -11,7 +11,7 @@ th.prooftable{
 p.formula{
     font-size: 18pt;
 }
-div.wff.selected{
+span.wff.selected{
     border: 5px solid orange;
 }
 

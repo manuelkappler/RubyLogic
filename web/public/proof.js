@@ -18,7 +18,7 @@ function get_laws(id){
             lawdiv.append('<button class="law_item btn-lg btn-success" id="' + index + '"> ' + value +'</button>');
         });
     })
-    $('#select_law').css('visibility', 'visible');
+    $('#select_law').removeClass("hidden-xl-down")
     $("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
@@ -54,7 +54,7 @@ function refresh_next_step(data){
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('.implication_separator').get()]);
     field.append('<span class="wff" id="conclusion"> \\(' + data.conclusion + '\\) </span>')
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#conclusion').get()]);
-    $('#select_component').css('visibility', 'visible');
+    $('#select_component').removeClass("hidden-xl-down");
     $("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
@@ -71,8 +71,8 @@ function reset_all(){
     $('#done_title').removeClass("bg-danger");
     $('#done_title').removeClass("bg-success");
     $('#next_step').addClass("hidden-xl-down");
-	$('#error_display').html("")
-	$('#error_display').addClass("hidden-xl-down");
+    $('#error_display').html("")
+    $('#error_display').addClass("hidden-xl-down");
 }
 
 $(document).ready(function (){
@@ -144,7 +144,7 @@ function respond_to_data(data){
                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#ce_formula').get()]);
             }
         }
-        $('#select_law').css("visibility", "hidden")
+        $('#select_law').addClass("hidden-xl-down")
         $('#availablelaws').html("")
 }
 
@@ -159,7 +159,6 @@ $(document).on('click', '.law_item', function(event) {
 });
 
 $(document).on('click', '.wff', function(event) {
-    console.log("Clicked on a wff")
     $('.wff.selected').removeClass("selected")
     $(this).addClass("selected")
     get_laws($(this).closest('.wff').attr("id"))

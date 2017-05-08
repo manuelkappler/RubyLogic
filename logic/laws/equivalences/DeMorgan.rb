@@ -36,7 +36,12 @@ class DeMorgan < Equivalence
       @wff = CompositeSentence.new(And.new, inside.element1, negated_el2)
     elsif @connective.is_a? Iff
       @wff = CompositeSentence.new(Or.new, CompositeSentence.new(neg, CompositeSentence.new(If.new, inside.element1, inside.element2)), CompositeSentence.new(neg, CompositeSentence.new(If.new, negated_el1, negated_el2)))
+    elsif defined? Universal and @connective.is_a? Universal
+      @wff = CompositeSentence.new(Existential.new(inside.connective.variable), CompositeSentence.new(neg,  inside.element1))
+    elsif defined? Existential and @connective.is_a? Existential
+      @wff = CompositeSentence.new(Universal.new(inside.connective.variable), CompositeSentence.new(neg, inside.element1))
     end
+
   end
 
   def to_s
@@ -49,7 +54,7 @@ end
 
 def demorgan? wff
   begin
-    return true if wff.connective.is_a? Not and (wff.element1.connective.is_a? And or wff.element1.connective.is_a? Or or wff.element1.connective.is_a? If or wff.element1.connective.is_a? Iff)
+    return true if wff.connective.is_a? Not and (wff.element1.connective.is_a? And or wff.element1.connective.is_a? Or or wff.element1.connective.is_a? If or wff.element1.connective.is_a? Iff or (defined? Universal and wff.element1.connective.is_a? Universal or wff.element1.connective.is_a? Existential))
     return false
   rescue
     return false

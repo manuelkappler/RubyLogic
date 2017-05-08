@@ -1,0 +1,4 @@
+
+class Quantifier < UnaryConnective
+
+end

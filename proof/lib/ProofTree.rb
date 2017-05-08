@@ -50,7 +50,7 @@ class ProofTree
   def construct_counterexample impl
     return false unless impl.elementary?
     return nil if impl.valid?
-    return Interpretation.new impl, true
+    return Model.new impl, true
   end
 
   def get_current_step

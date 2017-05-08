@@ -12,7 +12,7 @@
 
 require 'set'
 
-class Interpretation
+class Model
 
   def initialize implication = nil, counterexample = false
     @predicates = (implication.premises + [implication.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten

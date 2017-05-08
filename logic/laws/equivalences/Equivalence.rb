@@ -12,4 +12,9 @@
 
 
 class Equivalence
+
+  def self.to_latex
+    return self.inspect
+  end
+
 end

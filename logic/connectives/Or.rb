@@ -19,6 +19,7 @@ class Or < BinaryConnective
     @latex = "\\vee "
     @strings = ["or", "∨"]
     @precedence = 3
+    @sort_priority = 7
   end
 
 end

@@ -19,6 +19,7 @@ class If < BinaryConnective
     @symbol = "→"
     @latex = "\\rightarrow "
     @strings = ["->", "→"]
+    @sort_priority = 4
   end
 
 end

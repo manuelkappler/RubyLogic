@@ -13,7 +13,7 @@
 class Connective
   include Comparable
 
-  attr_reader(:precedence)
+  attr_reader(:precedence, :sort_priority)
 
   def to_s
     return @symbol
@@ -32,5 +32,9 @@ class Connective
     else
       return 0
     end
+  end
+
+  def == other_connective
+    return self.to_s == other_connective.to_s
   end
 end

@@ -19,6 +19,7 @@ class Iff < BinaryConnective
     @symbol = "↔"
     @latex = "\\leftrightarrow "
     @strings = ["↔", "<->"]
+    @sort_priority = 5
   end
 
 end

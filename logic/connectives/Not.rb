@@ -19,6 +19,7 @@ class Not < UnaryConnective
     @precedence = 1
     @latex = "\\neg "
     @strings = ["not", "¬"]
+    @sort_priority = 2
   end
 
 end

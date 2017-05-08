@@ -19,6 +19,7 @@ class And < BinaryConnective
     @symbol = "∧"
     @strings = ["and", "∧"]
     @latex = "\\wedge "
+    @sort_priority = 6
   end
 
 end

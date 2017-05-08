@@ -31,7 +31,7 @@ class SubstituteEquivalents < Law
 
 
   def substitute_equivalents state, wff, equiv
-    if state.premises.any?{|x| x.is_equal? wff}
+    if state.premises.any?{|x| x == wff}
       # puts "Trying to replace premise"
       state.add_premise equiv.wff
       state.delete_premise wff

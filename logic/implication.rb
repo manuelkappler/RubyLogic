@@ -9,6 +9,7 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
+require 'set'
 
 class Implication
 
@@ -25,7 +26,6 @@ class Implication
   end
 
   def abort?
-    #puts "Checking whether to abort. Current claim is trivial? #{trivial?}. Current claim is elementary? #{elementary?}"
     return true if elementary? and not trivial?
     return false
   end
@@ -45,9 +45,19 @@ class Implication
       if @premises.any?{|x| x.class == Equality and not x.used?}
         return false
       end
+      if @premises.any?{|x| x.class == Universal and not self.get_all_constants{|y| x.connective.has_been_applied? y}}
+        return false
+      end
     rescue
     end
-    return true if @premises.all?{|x| x.is_a? AtomicSentence or (x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.is_a? AtomicSentence)} and (@conclusion.is_a? AtomicSentence or @conclusion.is_a? Contradiction or (@conclusion.is_a? CompositeSentence and @conclusion.connective.is_a? Not and @conclusion.element1.is_a? AtomicSentence))
+    return true if @premises.reject{|wff| 
+      wff.is_a? CompositeSentence and wff.connective.is_a? Universal and 
+        self.get_all_constants.all?{|y| wff.connective.has_been_applied? y}}.all?{|x| 
+        x.is_a? AtomicSentence or
+          (x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.is_a? AtomicSentence)} and 
+      (@conclusion.is_a? AtomicSentence or 
+       @conclusion.is_a? Contradiction or 
+       (@conclusion.is_a? CompositeSentence and @conclusion.connective.is_a? Not and @conclusion.element1.is_a? AtomicSentence))
     return false
   end
                                                         
@@ -55,7 +65,6 @@ class Implication
   def get_premises
     return @premises.clone
   end
-
   def get_conclusion
     return @conclusion.clone
   end
@@ -65,7 +74,6 @@ class Implication
   end
   
   def to_latex
-    puts "#{@premises.map{|x| x.to_s}.join(',')}\n #{@premises.sort.map{|x| x.to_s}.join(',')}"
     return (@premises.sort.map{|x| x.to_latex}.join(", ") + " \\models " + @conclusion.to_latex)
   end
 
@@ -76,14 +84,13 @@ class Implication
 
 
   def add_premise wff
-    #puts "Adding premise #{wff.inspect}"
-    unless @premises.any?{|x| x.is_equal? wff}
+    unless @premises.any?{|x| x == wff}
       if @premises == [nil]
         @premises = [wff]
       else
         @premises << wff
       end
-      #puts @premises
+    else
     end
   end
 
@@ -108,12 +115,13 @@ class Implication
   end
 
   def inconsistent_premises?
-    return true if @premises.any?{|x| @premises.any? {|y| CompositeSentence.new(Not.new, x).is_equal? y}}
+    return true if @premises.any?{|x| @premises.any? {|y| negated = CompositeSentence.new(Not.new, x); puts "Testing whether \n\t #{negated} (#{negated.inspect}) and \n\t #{y} (#{y.inspect}) are contradictions}"; negated == y}}
+    return true if @premises.any?{|x| x.is_a? CompositeSentence and x.element1.is_a? Equality and x.connective.is_a? Not and x.element1.terms[0] == x.element1.terms[1]}
     return false
   end
 
   def premises_contain_conclusion?
-    return true if @premises.any? {|x| x.is_equal? @conclusion}
+    return true if @premises.any? {|x| x == @conclusion}
     return false
   end
 
@@ -125,6 +133,16 @@ class Implication
       return false
     end
   end
+
+  def get_all_constants
+    consts = []
+    @premises.each{|x| x.get_constants.each{|y| consts << y}}
+    @conclusion.get_constants.each{|x| consts << x} unless @conclusion.is_a? Contradiction
+    return consts.uniq{|x| x.name}
+  end
+
+
+
 end
 
 

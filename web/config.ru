@@ -3,6 +3,7 @@ require 'rack'
 require_relative 'web_logic.rb'
 require_relative 'apps/predicate_proof.rb'
 require_relative 'apps/sentential_proof.rb'
+require_relative 'apps/fol_proof.rb'
 require_relative 'apps/truthtable.rb'
 require_relative 'apps/graphing.rb'
 
@@ -12,6 +13,7 @@ use Rack::Static, :urls => ['public/styles.css', 'public/index.js'], :root => 'p
 run Rack::URLMap.new(
   "/" => MainApp.new,
   "/predicate_logic/" => ProofPred.new,
+  "/first_order_logic/" => ProofFOL.new,
   "/sentential_logic/" => ProofSent.new,
   "/extension_graph/" => ExtensionGraph.new,
   "/truthtables/" => TruthTable.new)

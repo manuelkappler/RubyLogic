@@ -16,4 +16,5 @@ class Law
   def self.to_s
     return self.inspect
   end
+
 end

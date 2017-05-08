@@ -12,28 +12,59 @@
 
 require 'set'
 
-class Interpretation
+class Model
 
-  def initialize implication = nil, counterexample = false
+  def initialize impl = nil, counterexample = false
     @universe = Set.new
-    @predicates = (implication.premises + [implication.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
-    @constants = (implication.premises + [implication.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
-
+    @predicates = {}
+    @constants = {}
+    @variables = Set.new
     @pi_hash = @predicates.map.with_object({}){|pred, hsh| hsh[pred] = Set.new}
     puts @pi_hash
     @equalities = []
     @inequalities = []
-    update_inequalities
-    print @inequalities.map(&:to_s).join(",") + "\n"
-    if counterexample
-      construct_counterexample implication
+  end
+
+  class PartOfUniverse
+    def initialize name
+      @name = name
     end
+  end
+
+  def create_universe *members
+    members.map{|x| PartOfUniverse.new(x)}.each{|y| @universe << y}
+  end
+
+  def add_predicate pred
+    return false unless @predicates[pred].nil?
+    @predicates[pred] = Set.new
+  end
+
+  def add_to_extension pred, *ext
+    raise LogicError unless pred.is_a? Predicate
+    if @predicates[pred].nil?
+      add_predicate pred
+    end
+    raise LogicError unless pred.is_valid_extension? ext
+    @predicates[pred] << ext
+  end
+
+  def add_variable var
+    raise LogicError unless var.is_a? Variable
+    @variables << var
+  end
+
+  def add_constant const, reference
+    raise LogicError unless const.is_a? Constant
+    raise LogicError unless @universe.includes? reference
+    @constants[const] = reference
   end
 
   def construct_counterexample implication
     implication.premises.each do |prem|
       if prem.is_a? CompositeSentence 
         if prem.element1.class == Equality
+        elsif prem.element1.class == Universal
         else
           raise LogicError unless prem.connective.is_a? Not
           self.set_predicate prem.element1.predicate, false, prem.element1.constants

@@ -1,0 +1,63 @@
+%script(src="graph.js")
+%script(src="http://d3js.org/d3.v4.min.js")
+-# %script(src="https://cdn.rawgit.com/eligrey/Blob.js/0cef2746414269b16834878a8abc52eb9d53e6bd/Blob.js")
+-# %script(src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js")
+-# %script(src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js")
+-# %script(src="https://cdn.rawgit.com/eligrey/FileSaver.js/597b6cd0207ce408a6d34890b5b2826b13450714/demo/demo.js")
+
+:css
+  .link {
+    stroke: steelblue;
+    fill: none;
+    stroke-width: 2px;
+    stroke-dasharray: 3, 3;
+    alpha: 0.5;
+  }
+  .link.non_highlighted {
+    stroke: steelblue;
+    fill: none;
+    stroke-width: 1px;
+    stroke-dasharray: 3, 10;
+    marker-mid: none;
+  }
+  .link.highlight_from {
+    marker-mid: url(#highlight);
+    stroke-width: 5px;
+    stroke: coral;
+    stroke-dasharray: 5, 5;
+  }
+  .link.highlight_to {
+    marker-mid: url(#highlight);
+    stroke-width: 5px;
+    stroke: forestgreen;
+    stroke-dasharray: 10, 5;
+  }
+  .link.self_referenced{
+    marker-mid: none;
+  }
+  .node circle {
+    fill: #2a3;
+    stroke: #000;
+    stroke-width: 1.5px;
+  }
+
+#content.container-fluid
+  .page-header 
+    %h1 Extension Grapher
+  .card.card-outline-primary#input
+    .card-block.card-inverse.bg-primary#input_title_block{:data => {:toggle => "collapse", :target => "#collapse_input"}, :aria => {:expanded => "false", :controls => "collapse_input"}}
+      .card-title#input_heading
+        %h2 Enter the extension (of a binary relation)
+    .card-block.collapse.show.no-transition#collapse_input
+      .input-group
+        %span.input-group-addon#sizing-addon1 Set of tuples
+        %input.form-control#extension{:type => "text", :placeholder => "For example: {(a, b), (b, c)...}"}
+      .input-group-lg
+        %input.btn.btn-primary.btn-block#submit{:type => "submit"}
+    .card-block.card-danger.hidden-xl-down#error_display
+  .card.card-outline-info.hidden-xl-down#graph
+    .card-block.bg-info
+      .card-title
+        %h2 Graph
+    .card-block
+      .graph_holder#graph_holder

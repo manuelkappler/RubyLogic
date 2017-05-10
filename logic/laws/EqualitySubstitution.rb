@@ -37,11 +37,12 @@ class LHEqualitySubstitution < Law
 
   def substitute_all state, wff
     from_term, to_term = [wff.terms[0], wff.terms[1]]
-    state.premises.reject{|x| x == self or x.is_a? Contradiction}.each do |prem|
+    state.premises.reject{|x| x == wff or x.is_a? Contradiction}.each do |prem|
+      puts "Asking to delete #{prem}"
       state.delete_premise prem
       state.add_premise substitute(prem, from_term, to_term)
     end
-    state.add_conclusion substitute(state.conclusion, from_term, to_term) unless state.conclusion == self or state.conclusion.is_a? Contradiction
+    state.add_conclusion substitute(state.conclusion, from_term, to_term) unless state.conclusion == wff or state.conclusion.is_a? Contradiction
     return state
   end
 
@@ -105,7 +106,7 @@ class RHEqualitySubstitution < Law
 
   def substitute_all state, wff
     from_term, to_term = [wff.terms[1], wff.terms[0]]
-    state.premises.reject{|x| x == self or x.is_a? Contradiction}.each do |prem|
+    state.premises.reject{|x| x == wff or x.is_a? Contradiction}.each do |prem|
       puts "Substituting in #{prem.inspect}"
       puts "Deleting original premise"
       state.delete_premise prem
@@ -114,7 +115,7 @@ class RHEqualitySubstitution < Law
       puts "Adding substituted premise: #{sub}"
       state.add_premise sub
     end
-    state.add_conclusion substitute(state.conclusion, from_term, to_term) unless state.conclusion == self or state.conclusion.is_a? Contradiction
+    state.add_conclusion substitute(state.conclusion, from_term, to_term) unless state.conclusion == wff or state.conclusion.is_a? Contradiction
     return state
   end
 

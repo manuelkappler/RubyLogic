@@ -55,7 +55,7 @@ def parse_string_pc0 input_string, constants_hsh, predicates_hsh
       raise ParsingError unless predicates_hsh.has_key? element[0]
       pred = predicates_hsh[element[0]]
       vars = element.scan(/.*?([a-z]{1}).*?/).flatten.map{|x| raise ParsingError unless constants_hsh.has_key? x; constants_hsh[x]}
-      premise_queue << AtomicSentence.new(pred, vars)
+      premise_queue << AtomicSentence.new(pred, *vars)
     end
   end
   until operator_stack[-1].is_a? Sentinel

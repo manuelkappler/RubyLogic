@@ -77,7 +77,7 @@ class ProofFOL < Sinatra::Base
   end
 
   get '/' do
-    haml :predicate_proof
+    haml :fol_proofs
   end
 
   get '/to_latex' do

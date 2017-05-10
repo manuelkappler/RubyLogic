@@ -16,7 +16,7 @@ class Model
 
   def initialize implication = nil, counterexample = false
     @predicates = (implication.premises + [implication.conclusion]).reject{|x| x.class == Equality or x.is_a? Contradiction}.map{|x| (x.is_a? AtomicSentence) ? x.predicate : x.element1.predicate}.flatten
-    @constants = (implication.premises + [implication.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.constants : x.element1.constants unless x.is_a? Contradiction}.flatten
+    @constants = (implication.premises + [implication.conclusion]).map{|x| (x.is_a? AtomicSentence)  ? x.terms : x.element1.terms unless x.is_a? Contradiction}.flatten
 
     @pi_hash = @predicates.map.with_object({}){|pred, hsh| hsh[pred] = Set.new}
     puts @pi_hash
@@ -35,20 +35,20 @@ class Model
         if prem.element1.class == Equality
         else
           raise LogicError unless prem.connective.is_a? Not
-          self.set_predicate prem.element1.predicate, false, prem.element1.constants
+          self.set_predicate prem.element1.predicate, false, prem.element1.terms
         end
       elsif prem.class == Equality
         self.add_equality prem
       elsif prem.is_a? AtomicSentence
-        self.set_predicate prem.predicate, true, prem.constants
+        self.set_predicate prem.predicate, true, prem.terms
       end
     end
     unless implication.conclusion.is_a? Contradiction
       if implication.conclusion.is_a? CompositeSentence
         raise LogicError unless implication.conclusion.connective.is_a? Not
-        self.set_predicate implication.conclusion.element1.predicate, true, implication.conclusion.element1.constants
+        self.set_predicate implication.conclusion.element1.predicate, true, implication.conclusion.element1.terms
       else
-        self.set_predicate implication.conclusion.predicate, false, implication.conclusion.constants
+        self.set_predicate implication.conclusion.predicate, false, implication.conclusion.terms
       end
     end
   end

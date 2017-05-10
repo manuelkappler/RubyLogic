@@ -5,7 +5,6 @@
 
 require 'sinatra'
 require 'json'
-require_relative '../../logic/semantics_fol.rb'
 
 class FOLSemantics < Sinatra::Base
 
@@ -31,6 +30,8 @@ class FOLSemantics < Sinatra::Base
 
 
   configure do
+
+    load File::expand_path("../../logic/semantics_fol.rb")
     ModelHolder.init()
   end
 

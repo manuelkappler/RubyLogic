@@ -10,6 +10,17 @@
 # (at your option) any later version.
 
 
+class Term
+
+  def == other_atom
+    return self.to_s == other_atom.to_s
+  end
+
+  def <=> other_atom
+    return self.to_s <=> other_atom.to_s
+  end
+end
+
 class Constant
 
   def initialize string
@@ -64,7 +75,7 @@ class Sentence
     if self.class != other_atom.class
       return false
     elsif self.is_a? AtomicSentence and self.is_a? other_atom.class
-      return (self.predicate.to_s == other_atom.predicate.to_s and self.constants.map.with_index{|x, idx| true if other_atom.constants[idx].to_s == x.to_s}.all?)
+      return (self.predicate.to_s == other_atom.predicate.to_s and self.terms.map.with_index{|x, idx| true if other_atom.terms[idx].to_s == x.to_s}.all?)
     elsif (self.is_a? CompositeSentence) and (other_atom.is_a? CompositeSentence)
       if self.connective.is_a? other_atom.connective.class
         if self.connective.is_a? UnaryConnective
@@ -82,6 +93,34 @@ class Sentence
     return ObjectSpace.each_object(Class).select{|cl| cl < Law and cl.available}.select{|law| law.applies? self, premise}
   end
 
+  def == other_atom
+    x = self.is_double_negation? ? self.element1.element1 : self
+    y = other_atom.is_double_negation? ? other_atom.element1.element1 : other_atom
+    if x.class <= AtomicSentence
+      if y.class == x.class
+        return true if x.predicate == y.predicate and x.terms.map.with_index{|z, idx| z == y.terms[idx]}.all?
+      else
+        return false
+      end
+    else
+      if y.is_a? CompositeSentence
+        return false if x.connective != y.connective
+        if x.connective.is_a? UnaryConnective
+          return x.element1 == y.element1
+        else
+          return ((x.element1 == y.element1) and (x.element2 == y.element2))
+        end
+      end
+    end
+  end
+
+  def is_double_negation?
+    return false unless self.is_a? CompositeSentence
+    return false unless self.connective.is_a? Not
+    return false unless self.element1.is_a? CompositeSentence
+    return true if self.element1.connective.is_a? Not
+  end
+
   def <=> other_atom
     #puts "Asked to compare #{self.to_s} with #{other_atom.to_s}"
     return 0 if self.is_equal? other_atom
@@ -97,7 +136,7 @@ class Sentence
       if self.is_a? AtomicSentence
         #puts "#{other_atom.predicate.to_s} < #{self.predicate.to_s}? #{other_atom.predicate.to_s < self.predicate.to_s}"
         if other_atom.predicate.to_s == self.predicate.to_s
-          return self.constants[0].to_s <=> other_atom.constants[0].to_s
+          return self.terms[0].to_s <=> other_atom.terms[0].to_s
         else
           return self.predicate.to_s <=> other_atom.predicate.to_s
         end
@@ -117,26 +156,52 @@ class Sentence
       end
     end
   end
+
+  def get_constants
+    if self.class < AtomicSentence or self.class == AtomicSentence
+      return self.terms.select{|x| x.class == Constant}
+    elsif self.class == CompositeSentence
+      if self.connective.is_a? UnaryConnective
+        return self.element1.get_constants
+      else
+        return self.element1.get_constants | self.element2.get_constants
+      end
+    end
+    puts "CRITICAL: End of get_constants method but no value returned"
+    raise LogicError
+  end
+
+  def get_predicates
+    if self.class <= AtomicSentence
+      return [self.predicate]
+    elsif self.class == CompositeSentence
+      if self.connective.is_a? UnaryConnective
+        return self.element1.get_predicates
+      else
+        return self.element1.get_predicates | self.element2.get_predicates
+      end
+    end
+  end
 end
 
 class AtomicSentence < Sentence
-  attr_reader :predicate, :constants
-  def initialize predicate, constants
+  attr_reader :predicate, :terms
+  def initialize predicate, *terms
     @predicate = predicate
-    if constants.length != predicate.arity
-      puts "Constants are of length #{constants.length} but predicate has arity #{predicate.arity}"
+    if terms.length != predicate.arity
+      puts "Constants are of length #{terms.length} but predicate has arity #{predicate.arity}"
     else
-      @constants = constants
+      @terms = terms 
     end
   end
 
   def to_s
-    return "#{@predicate.to_s}(#{@constants.map(&:to_s).join(", ")})"
+    return "#{@predicate.to_s}(#{@terms.map(&:to_s).join(", ")})"
   end
 
   def to_latex
     #puts "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
-    return "#{@predicate.to_latex}(#{@constants.map(&:to_s).join(",")})"
+    return "#{@predicate.to_latex}(#{@terms.map(&:to_s).join(",")})"
   end
 
 end
@@ -207,12 +272,12 @@ end
 
 class Equality < AtomicSentence
 
-  attr_reader :element1, :element2, :constants
+  attr_reader :element1, :element2, :terms
 
   def initialize left, right
     @element1 = left
     @element2 = right
-    @constants = [@element1, @element2]
+    @terms = [@element1, @element2]
     @pred = Predicate.new("≈", 2)
     @used = false
   end

@@ -43,22 +43,23 @@ class Implication
   def elementary?
     begin
       puts "Checking whether elementary premises"
-      if @premises.any?{|x| x.class == Equality and not x.used?}
-        return false
+      if Object.const_defined?('Equality')
+        if @premises.any?{|x| x.class == Equality and not x.used?}
+          return false
+        end
+        puts "No unused equalities"
       end
-      puts "No unused equalities"
-      puts @premises.map{|x| puts (x.connective.is_a? Universal) ? "Universal found, has been applied? #{x.connective.has_been_applied?}" : "Not a universal"}
-      if @premises.any?{|x| x.connective.is_a? Universal and ((not x.connective.has_been_applied?) or (not self.get_all_constants.all?{|y| x.connective.has_been_applied? y}))}
-        return false
+      if Object.const_defined('Universal')
+        if @premises.any?{|x| x.connective.is_a? Universal and ((not x.connective.has_been_applied?) or (not self.get_all_constants.all?{|y| x.connective.has_been_applied? y}))}
+          return false
+        end
+        puts "No unused quantifiers"
       end
-      puts "No unused quantifiers"
     rescue Exception => e
       puts "Error in checking for elementary conclusion. #{e.message}"
     end
     return true if @premises.reject{|wff| 
-      wff.is_a? CompositeSentence and wff.connective.is_a? Universal and 
-        self.get_all_constants.all?{|y| wff.connective.has_been_applied? y}}.all?{|x| 
-        x.is_a? AtomicSentence or
+      Object.const_defined?('Universal') and wff.is_a? CompositeSentence and wff.connective.is_a? Universal and self.get_all_constants.all?{|y| wff.connective.has_been_applied? y}}.all?{|x| x.is_a? AtomicSentence or
           (x.is_a? CompositeSentence and x.connective.is_a? Not and x.element1.is_a? AtomicSentence)} and 
       (@conclusion.is_a? AtomicSentence or 
        @conclusion.is_a? Contradiction or 
@@ -127,8 +128,10 @@ class Implication
   def inconsistent_premises?
     return true if @premises.any?{|x| puts "Checking for contradictions with #{x}: "; @premises.any? {|y| if x == CompositeSentence.new(Not.new, y) then puts "#{x} == ¬#{y}!"; true else false end}}
     puts "No inconsistent premises found, checking for applications of negated self-identity"
-    return true if @premises.any?{|x| x.is_a? CompositeSentence and x.element1.is_a? Equality and x.connective.is_a? Not and x.element1.terms[0] == x.element1.terms[1]}
-    return false
+    if Object.const_defined?('Equality')
+      return true if @premises.any?{|x| x.is_a? CompositeSentence and x.element1.is_a? Equality and x.connective.is_a? Not and x.element1.terms[0] == x.element1.terms[1]}
+      return false
+    end
   end
 
   def premises_contain_conclusion?

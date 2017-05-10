@@ -10,7 +10,7 @@
 # (at your option) any later version.
 
 
-class Interpretation
+class Model 
 
   def initialize impl, counterexample=false
     @sentences = {}

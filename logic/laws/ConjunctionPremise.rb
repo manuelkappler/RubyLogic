@@ -24,9 +24,12 @@ class ConjunctionPremise < Law
   end
 
   def conjunction_premise state, wff
-    state.add_premise wff.element1
-    state.add_premise wff.element2
+    puts "Deleting #{wff}"
     state.delete_premise wff
+    puts "Adding #{wff.element1}"
+    state.add_premise wff.element1
+    puts "Adding #{wff.element2}"
+    state.add_premise wff.element2
     return state
   end
   def to_s

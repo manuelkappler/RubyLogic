@@ -81,6 +81,22 @@ class Predicate
   def <=> other_pred
     return @name <=> other_pred.to_s
   end
+
+  def == other_pred
+    return true if self.to_s == other_pred.to_s
+    return false
+  end
+
+  def eql? other_pred
+    return true if self.to_s == other_pred.to_s
+    return false
+  end
+
+  def === other_pred
+    return true if self.to_s == other_pred.to_s
+    return false
+  end
+
 end
 
 class Connective
@@ -94,7 +110,7 @@ class Sentence
 
   def substitute variable, constant
     raise LogicError unless (variable.is_a? Variable and constant.is_a? Constant)
-    if self.class < AtomicSentence
+    if self.class == AtomicSentence or self.class < AtomicSentence
       if self.class == Equality
         return Equality.new(*self.terms.map{|x| (x.class == Variable and x == variable) ? constant : x})
       else
@@ -102,16 +118,15 @@ class Sentence
       end
     elsif self.class == CompositeSentence
       if self.connective.is_a? UnaryConnective
-
         return CompositeSentence.new(self.connective, self.element1.substitute(variable, constant))
       else
         return CompositeSentence.new(self.connective, self.element1.substitute(variable, constant), self.element2.substitute(variable, constant))
       end
     end
+    raise LogicError 
   end
 
   def get_constants
-    puts "Called get_constants on #{self}"
     if self.class < AtomicSentence or self.class == AtomicSentence
       return self.terms.select{|x| x.class == Constant}
     elsif self.class == CompositeSentence
@@ -122,6 +137,19 @@ class Sentence
       end
     end
     puts "CRITICAL: End of get_constants method but no value returned"
+    raise LogicError
+  end
+
+  def get_predicates
+    if self.class <= AtomicSentence
+      return [self.predicate]
+    elsif self.class == CompositeSentence
+      if self.connective.is_a? UnaryConnective
+        return self.element1.get_predicates
+      else
+        return self.element1.get_predicates | self.element2.get_predicates
+      end
+    end
   end
 
   def <=> other_atom
@@ -163,22 +191,31 @@ class Sentence
   end
 
   def == other_atom
-    if self.class ==  AtomicSentence
-      if other_atom.class == AtomicSentence
-        return true if self.predicate == other_atom.predicate and self.terms.map.with_index{|x, idx| x == other_atom.terms[idx]}.all?
+    x = self.is_double_negation? ? self.element1.element1 : self
+    y = other_atom.is_double_negation? ? other_atom.element1.element1 : other_atom
+    if x.class <= AtomicSentence
+      if y.class == x.class
+        return true if x.predicate == y.predicate and x.terms.map.with_index{|z, idx| z == y.terms[idx]}.all?
       else
         return false
       end
     else
-      if other_atom.is_a? CompositeSentence
-        return false if self.connective != other_atom.connective
-        if self.connective.is_a? UnaryConnective
-          return self.element1 == other_atom.element1
+      if y.is_a? CompositeSentence
+        return false if x.connective != y.connective
+        if x.connective.is_a? UnaryConnective
+          return x.element1 == y.element1
         else
-          return ((self.element1 == other_atom.element1) and (self.element2 == other_atom.element2))
+          return ((x.element1 == y.element1) and (x.element2 == y.element2))
         end
       end
     end
+  end
+
+  def is_double_negation?
+    return false unless self.is_a? CompositeSentence
+    return false unless self.connective.is_a? Not
+    return false unless self.element1.is_a? CompositeSentence
+    return true if self.element1.connective.is_a? Not
   end
 end
 
@@ -188,7 +225,6 @@ class AtomicSentence < Sentence
     @predicate = predicate
     @terms = []
     if terms.length != predicate.arity
-      puts "Constants are of length #{terms.length} but predicate has arity #{predicate.arity}"
       raise LogicError
     else
       terms.each do |x| 
@@ -198,7 +234,6 @@ class AtomicSentence < Sentence
           @terms << x
         end
       end
-      puts "Created atomic sentence #{self.to_s} with #{@terms.inspect}"
     end
   end
 
@@ -249,7 +284,6 @@ class CompositeSentence < Sentence
   end
 
   def to_latex
-    puts "Called #{self}.to_latex"
     output(Proc.new{|x| x.to_latex})
   end
 
@@ -283,7 +317,6 @@ class Equality < AtomicSentence
 
   def initialize *terms
     @terms = []
-    puts "Trying to initialize new equality #{terms.map(&:inspect)}"
     raise LogicError unless terms.length == 2
     terms.each do |x|
       if x.is_a? String
@@ -291,13 +324,11 @@ class Equality < AtomicSentence
       elsif x.is_a? Constant or x.is_a? Variable
         @terms << x
       else
-        puts "Neither string nor Constant nor Variable"
         raise LogicError
       end
     end
     @predicate = Predicate.new("≈", 2)
     @used = false
-    puts "Initialized as #{self.inspect}"
   end
 
   def used?
@@ -316,9 +347,6 @@ class Equality < AtomicSentence
     return "#{@terms[0].to_s}\\approx #{@terms[1].to_s}"
   end
 
-  def == other
-    return true if @terms[0] == other.terms[0] and @terms[1] == other.terms[1]
-  end
 end
 
 # Load all connectives

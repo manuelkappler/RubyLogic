@@ -9,6 +9,7 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
+require 'pry'
 
 class Term
 
@@ -153,34 +154,26 @@ class Sentence
   end
 
   def <=> other_atom
+    #binding.pry
     return 0 if self == other_atom
-    if self.class == Equality
-      if other_atom.class == Equality
-        return (self.terms[0].to_s <=> other_atom.terms[1].to_s )
-      else
-        return -1
-      end
-    elsif self.is_a? AtomicSentence
-      if other_atom.is_a? AtomicSentence
-        comps = [self.predicate <=> other_atom.predicate] + self.terms.map.with_index{|x, idx| x <=> other_atom.terms[idx]}
-        return comps.select{|x| x != 0}[0]
+    if self.class <= AtomicSentence
+      if other_atom.class <= AtomicSentence
+        return self.predicate <=> other_atom.predicate unless self.predicate == other_atom.predicate
+        return self.terms.map.with_index{|x, idx| x <=> other_atom.terms[idx]}.select{|x| x != 0}[0]
       elsif other_atom.is_a? CompositeSentence
-        return 1
-        #if other_atom.connective.is_a? UnaryConnective
-        #  #return self <=> other_atom.element1
-        #else
-        #  return [self <=> other_atom.element1, self <=> other_atom.element2].select{|x| x != 0}[0]
-        #end
+        return -1 * (other_atom <=> self)
       end
     elsif self.is_a? CompositeSentence
-      if other_atom.is_a? CompositeSentence
+      if self.connective.is_a? Not
+        return self.element1 <=> other_atom
+      elsif other_atom.is_a? CompositeSentence
         if self.connective == other_atom.connective
           return self.element1 <=> other_atom.element1
         else
           return self.connective.sort_priority <=> other_atom.connective.sort_priority
         end
       else
-        return 1
+        return -1
       end
       #if self.connective.is_a? UnaryConnective
       #  return self.element1 <=> other_atom

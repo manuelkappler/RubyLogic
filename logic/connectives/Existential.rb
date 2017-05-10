@@ -21,7 +21,7 @@ class Existential < UnaryConnective
     @latex = "\\exists"
     @strings = ["exists", "∃"]
     @variable = variable
-    @sort_priority = 1
+    @sort_priority = 2
   end
 
   def to_s

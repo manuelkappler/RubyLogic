@@ -42,13 +42,18 @@ class Implication
 
   def elementary?
     begin
+      puts "Checking whether elementary premises"
       if @premises.any?{|x| x.class == Equality and not x.used?}
         return false
       end
-      if @premises.any?{|x| x.class == Universal and not self.get_all_constants{|y| x.connective.has_been_applied? y}}
+      puts "No unused equalities"
+      puts @premises.map{|x| puts (x.connective.is_a? Universal) ? "Universal found, has been applied? #{x.connective.has_been_applied?}" : "Not a universal"}
+      if @premises.any?{|x| x.connective.is_a? Universal and ((not x.connective.has_been_applied?) or (not self.get_all_constants.all?{|y| x.connective.has_been_applied? y}))}
         return false
       end
-    rescue
+      puts "No unused quantifiers"
+    rescue Exception => e
+      puts "Error in checking for elementary conclusion. #{e.message}"
     end
     return true if @premises.reject{|wff| 
       wff.is_a? CompositeSentence and wff.connective.is_a? Universal and 
@@ -84,13 +89,15 @@ class Implication
 
 
   def add_premise wff
+    puts "Adding premise #{wff} to #{@premises.inspect}"
     unless @premises.any?{|x| x == wff}
-      if @premises == [nil]
+      if @premises.empty?
         @premises = [wff]
       else
         @premises << wff
       end
     else
+      puts "Already present"
     end
   end
 
@@ -108,19 +115,25 @@ class Implication
 
   def delete_premise wff
     begin
-      @premises.delete wff
-    rescue
+      @premises.delete_if{|x| x == wff}
+    rescue Exception => e
+      puts "Error when deleting #{wff} from #{@premises}"
+      @premises.each{|x| puts "#{wff} == #{x}? #{(wff == x).inspect}"}
+      puts "Caught error #{e.message}. #{e.backtrace}"
       raise MissingWFFError
     end
   end
 
   def inconsistent_premises?
-    return true if @premises.any?{|x| @premises.any? {|y| negated = CompositeSentence.new(Not.new, x); puts "Testing whether \n\t #{negated} (#{negated.inspect}) and \n\t #{y} (#{y.inspect}) are contradictions}"; negated == y}}
+    return true if @premises.any?{|x| puts "Checking for contradictions with #{x}: "; @premises.any? {|y| if x == CompositeSentence.new(Not.new, y) then puts "#{x} == ¬#{y}!"; true else false end}}
+    puts "No inconsistent premises found, checking for applications of negated self-identity"
     return true if @premises.any?{|x| x.is_a? CompositeSentence and x.element1.is_a? Equality and x.connective.is_a? Not and x.element1.terms[0] == x.element1.terms[1]}
     return false
   end
 
   def premises_contain_conclusion?
+    return false if @conclusion.is_a? Contradiction
+    puts "Checking for equality with conclusions"
     return true if @premises.any? {|x| x == @conclusion}
     return false
   end
@@ -136,6 +149,7 @@ class Implication
 
   def get_all_constants
     consts = []
+    puts "Calling get_constants for each of #{@premises}"
     @premises.each{|x| x.get_constants.each{|y| consts << y}}
     @conclusion.get_constants.each{|x| consts << x} unless @conclusion.is_a? Contradiction
     return consts.uniq{|x| x.name}

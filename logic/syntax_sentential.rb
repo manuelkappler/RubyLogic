@@ -63,6 +63,35 @@ class Sentence
       end
     end
   end
+
+  def == other_atom
+    x = self.is_double_negation? ? self.element1.element1 : self
+    y = other_atom.is_double_negation? ? other_atom.element1.element1 : other_atom
+    if x.class <= AtomicSentence
+      if y.class == x.class
+        return true if x.predicate == y.predicate and x.terms.map.with_index{|z, idx| z == y.terms[idx]}.all?
+      else
+        return false
+      end
+    else
+      if y.is_a? CompositeSentence
+        return false if x.connective != y.connective
+        if x.connective.is_a? UnaryConnective
+          return x.element1 == y.element1
+        else
+          return ((x.element1 == y.element1) and (x.element2 == y.element2))
+        end
+      end
+    end
+  end
+
+  def is_double_negation?
+    return false unless self.is_a? CompositeSentence
+    return false unless self.connective.is_a? Not
+    return false unless self.element1.is_a? CompositeSentence
+    return true if self.element1.connective.is_a? Not
+  end
+
 end
 
 class AtomicSentence < Sentence

@@ -29,7 +29,8 @@ class Universal < Quantifier
     @used << const
   end
 
-  def has_been_applied? const
+  def has_been_applied? const=nil
+    return (not @used.empty?) if const.nil? 
     return @used.include? const
   end
 

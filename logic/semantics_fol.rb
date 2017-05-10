@@ -11,18 +11,25 @@
 
 
 require 'set'
+require 'pry'
 
 class Model
 
   def initialize impl = nil, counterexample = false
     @universe = Set.new
-    @predicates = {}
-    @constants = {}
+    @predicates = Set.new
+    @constants = Set.new
     @variables = Set.new
+    unless impl.nil?
+      impl.premises.each{|x| x.get_predicates.each{|y| @predicates << y}}
+      impl.conclusion.get_predicates.each{|x| @predicates << x} unless impl.conclusion.is_a? Contradiction
+    end
     @pi_hash = @predicates.map.with_object({}){|pred, hsh| hsh[pred] = Set.new}
-    puts @pi_hash
     @equalities = []
     @inequalities = []
+    unless not counterexample or impl.nil?
+      construct_counterexample impl
+    end
   end
 
   class PartOfUniverse
@@ -64,33 +71,34 @@ class Model
     implication.premises.each do |prem|
       if prem.is_a? CompositeSentence 
         if prem.element1.class == Equality
-        elsif prem.element1.class == Universal
+        elsif prem.connective.class == Universal
         else
           raise LogicError unless prem.connective.is_a? Not
-          self.set_predicate prem.element1.predicate, false, prem.element1.constants
+          self.set_predicate prem.element1.predicate, false, prem.element1.terms
         end
       elsif prem.class == Equality
         self.add_equality prem
       elsif prem.is_a? AtomicSentence
-        self.set_predicate prem.predicate, true, prem.constants
+        self.set_predicate prem.predicate, true, prem.terms
       end
     end
     unless implication.conclusion.is_a? Contradiction
       if implication.conclusion.is_a? CompositeSentence
         raise LogicError unless implication.conclusion.connective.is_a? Not
-        self.set_predicate implication.conclusion.element1.predicate, true, implication.conclusion.element1.constants
+        self.set_predicate implication.conclusion.element1.predicate, true, implication.conclusion.element1.terms
       else
-        self.set_predicate implication.conclusion.predicate, false, implication.conclusion.constants
+        self.set_predicate implication.conclusion.predicate, false, implication.conclusion.terms
       end
     end
   end
 
-  def set_predicate predicate, boolean, constants
+  def set_predicate predicate, boolean, terms
     begin
-      constants.any?{|x| not @constants.include? x}
       if boolean
-        @pi_hash[predicate] << constants
+        @pi_hash[predicate] << terms 
       end
+    rescue Exception => e
+      puts "Exception in set_predicate while constructing counterexample. #{e.message}\n\n#{e.backtrace}"
     end
   end
 
@@ -106,16 +114,12 @@ class Model
         if const1 == "" or const1.nil? or const2 == "" or const2.nil?
           next
         elsif const1 == const2
-          # puts "Reflexivity"
           next
         elsif @equalities.any?{|x| (x.element1 == const1 and x.element2 == const2) or (x.element2 == const1 and x.element1 == const2)}
-          # puts "This is an equality #{const1} = #{const2}"
           next
         elsif ineq.any?{|x| (x.element1 == const1 and x.element2 == const2) or (x.element2 == const1 and x.element1 == const2)}
-          # puts "Skipping already present inequality: #{const1} != #{const2}"
           next
         else
-          # puts "New inequality: #{const1} != #{const2}"
           ineq << Equality.new(const1, const2)
         end
       end

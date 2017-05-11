@@ -22,12 +22,17 @@ class DeMorgan < Equivalence
   end
 
   def apply
+    # ¬(∀x (F(x) ∨ G(x))
+    # cur_wff
+    #   Inside = cur_wff.element1
+    #   ∀ = Inside.connective
+    #       (F(x) ∨ G(x)) = Inside.element1
     puts "In apply demorgan, cur_wff = #{self.wff.to_s}"
     cur_wff = self.wff
     inside = cur_wff.element1
     neg = Not.new
     negated_el1 = (inside.element1.is_a? CompositeSentence and inside.element1.connective.is_a? Not) ?  inside.element1.element1 : CompositeSentence.new(neg, inside.element1)
-    negated_el2 = (inside.element2.is_a? CompositeSentence and inside.element2.connective.is_a? Not) ?  inside.element2.element1 : CompositeSentence.new(neg, inside.element2)
+    negated_el2 = (inside.element2.is_a? CompositeSentence and inside.element2.connective.is_a? Not) ?  inside.element2.element1 : CompositeSentence.new(neg, inside.element2) 
     if @connective.is_a? And
       @wff = CompositeSentence.new(Or.new, negated_el1, negated_el2)
     elsif @connective.is_a? Or
@@ -37,9 +42,9 @@ class DeMorgan < Equivalence
     elsif @connective.is_a? Iff
       @wff = CompositeSentence.new(Or.new, CompositeSentence.new(neg, CompositeSentence.new(If.new, inside.element1, inside.element2)), CompositeSentence.new(neg, CompositeSentence.new(If.new, negated_el1, negated_el2)))
     elsif defined? Universal and @connective.is_a? Universal
-      @wff = CompositeSentence.new(Existential.new(inside.connective.variable), CompositeSentence.new(neg,  inside.element1))
+      @wff = CompositeSentence.new(Existential.new(inside.connective.variable), negated_el1)
     elsif defined? Existential and @connective.is_a? Existential
-      @wff = CompositeSentence.new(Universal.new(inside.connective.variable), CompositeSentence.new(neg, inside.element1))
+      @wff = CompositeSentence.new(Universal.new(inside.connective.variable), negated_el1)
     end
 
   end

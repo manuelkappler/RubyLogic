@@ -13,7 +13,11 @@
 class Connective
 end
 
-class Variable
+class Term
+
+end
+
+class Variable < Term
   def initialize name
     @name = name
   end
@@ -44,22 +48,25 @@ class Sentence
   end
 
   def <=> other_atom
-    puts "Asked to compare #{self.to_s} with #{other_atom.to_s}"
-    return 0 if self.is_equal? other_atom
-    puts "Not equal"
-    if other_atom.is_a? AtomicSentence
-      puts "Other is Atomic"
-      if self.is_a? AtomicSentence
-        puts "Self is atomic, and comparison is #{self.to_s} <=> #{other_atom.to_s}: #{self.to_s <=> other_atom.to_s} and #{self.to_s.class}"
+    return 0 if self == other_atom
+    if self.class <= AtomicSentence
+      if other_atom.class <= AtomicSentence
         return (self.to_s <=> other_atom.to_s)
-      else self.is_a? CompositeSentence
-        return self.element1 <=> other_atom 
+      elsif other_atom.is_a? CompositeSentence
+        return -1 * (other_atom <=> self)
       end
-    elsif other_atom.class == CompositeSentence
-      if self.class == AtomicSentence
-        return self <=> other_atom.element1 
-      else self.class == CompositeSentence
-        return self.element1 <=> other_atom.element1 
+    elsif self.class <= CompositeSentence
+      if self.connective.is_a? Not
+        puts "Negated sentence, return comparison for inner element"
+        return self.element1 <=> other_atom
+      elsif other_atom.class <= CompositeSentence
+        if self.connective == other_atom.connective
+          return self.element1 <=> other_atom.element1
+        else
+          return self.connective.sort_priority <=> other_atom.connective.sort_priority
+        end
+      else 
+        return 1
       end
     end
   end

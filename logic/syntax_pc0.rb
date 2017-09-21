@@ -21,7 +21,7 @@ class Term
   end
 end
 
-class Constant
+class Constant < Term
 
   def initialize string
     if string.length == 1

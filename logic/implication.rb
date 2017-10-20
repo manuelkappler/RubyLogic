@@ -50,7 +50,7 @@ class Implication
         puts "No unused equalities"
       end
       if Object.const_defined?('Universal')
-        if @premises.any?{|x| x.connective.is_a? Universal and ((not x.connective.has_been_applied?) or (not self.get_all_constants.all?{|y| x.connective.has_been_applied? y}))}
+	if @premises.any?{|x| x.is_a? CompositeSentence and x.connective.is_a? Universal and ((not x.connective.has_been_applied?) or (not self.get_all_constants.all?{|y| x.connective.has_been_applied? y}))}
           return false
         end
         puts "No unused quantifiers"

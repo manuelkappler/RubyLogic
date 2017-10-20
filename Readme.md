@@ -1,25 +1,25 @@
 # Introduction
 
-RubyLogic aims to do a slate of things helpful for students and teachers of logic. Among them are:
+RubyLogic aims to do a slate of things helpful for students and teachers of logic, at least for those following Haim Gaifmann's idiosyncratic approach to it. 
+Among them are:
 
-- Generate truth tables for arbitrary formulas (already implemented as part of MarkdownTruthtable, which will be merged into this project)
+- Generate truth tables for arbitrary formulas
+- Work through deduction proofs and generate counterexamples to claims
 - Work through simplifications with equivalence laws
-- Work through deduction proofs, including branching
 
 ## Current State
 
-The program relies on Sinatra to open up a web interface that allows for proving implication claims in the framework $PC_0$.
+The program relies on Sinatra to open up a web interface that allows for proving implication claims 
 
 
 ## TODO
 
 Listed in decreasing order of importance
 
-- [ ] Re-enable the sentential logic component of the program on a joint web interface
-    - [ ] Implement syntax_sentential, semantics_sentential, parse_string_sentential, and proof_sentential
-    - [ ] Move logic-specific web code to a different app file and let the main app only control routes and basic interface
-    - [ ] Cleanly separate all syntax-specific code from ProofTree helper class
-- [ ] Merge `markdowntruthtable` into the project and enable in joint web interface
+- [x] Re-enable the sentential logic component of the program on a joint web interface
+    - [x] Implement syntax_sentential, semantics_sentential, parse_string_sentential, and proof_sentential
+    - [x] Move logic-specific web code to a different app file and let the main app only control routes and basic interface
+    - [x] Cleanly separate all syntax-specific code from ProofTree helper class
 - [x] Allow for printing of proofs as TeX file (proofs can now be displayed as a raw LaTeX-Tabular environment (A counterexample is given below if necessary)
 - [x] Implement checking for premises including conclusion
 - [x] Implement simplification via equivalence laws
